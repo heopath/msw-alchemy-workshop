@@ -1,0 +1,45 @@
+@Component
+script JumpPadComponent extends Component
+
+property number BounceForce = 6.0
+property any triggerHandler = nil
+
+@ExecSpace("ServerOnly")
+method void OnBeginPlay()
+    -- Subscribes to the sibling TriggerComponent's enter event to detect entities stepping onto the pad.
+    self.triggerHandler = self.Entity:ConnectEvent(TriggerEnterEvent, self.OnTriggerEnter)
+    log("JumpPadComponent ready on " .. self.Entity.Name .. ", BounceForce=" .. tostring(self.BounceForce))
+end
+
+@ExecSpace("ServerOnly")
+method void OnEndPlay()
+    -- Releases the trigger subscription.
+    if self.triggerHandler then
+        self.Entity:DisconnectEvent(TriggerEnterEvent, self.triggerHandler)
+    end
+end
+
+@ExecSpace("ServerOnly")
+method void OnTriggerEnter(TriggerEnterEvent event)
+    -- Bounces whichever entity stepped into the pad's trigger area straight upward.
+    local other = event.TriggerBodyEntity
+    if isvalid(other) == false then return end
+
+    local rb = other.RigidbodyComponent
+    if rb == nil then return end
+
+    -- MoveVelocity is the walking velocity the movement logic rewrites every frame, so it is
+    -- cleared first and never used to carry the bounce itself.
+    rb.MoveVelocity = Vector2.zero
+
+    -- MapleTile bodies expose JustJump for a forced vertical jump. It reports whether the jump
+    -- was accepted, so fall back to a raw upward force when it is refused (e.g. mid-air).
+    local jumped = rb:JustJump(Vector2(0, self.BounceForce))
+    if jumped == false then
+        rb:SetForce(Vector2(0, self.BounceForce))
+    end
+
+    log("JumpPad bounced entity: " .. other.Name .. " with force " .. tostring(self.BounceForce) .. ", JustJump=" .. tostring(jumped))
+end
+
+end
