@@ -26,6 +26,10 @@ script SporeShot extends AttackComponent
 	@HideFromInspector
 	property number Lifetime = 0
 
+	-- Set by the OnAttack hook, which the engine calls per defender that was actually attacked.
+	@HideFromInspector
+	property boolean HitLanded = false
+
 	@ExecSpace("ServerOnly")
 	method void Fire(number dirX, number dirY)
 		-- Normalises the travel direction and arms the projectile.
@@ -64,19 +68,33 @@ script SporeShot extends AttackComponent
 
 		local worldPosition = transform.WorldPosition
 		local hits = self:AttackFrom(Vector2(self.HitBoxSize, self.HitBoxSize), Vector2(worldPosition.x, worldPosition.y), "spore", CollisionGroups.Player)
-		if hits == nil then
+
+		local candidateCount = 0
+		if hits ~= nil then
+			for _, hit in pairs(hits) do
+				candidateCount = candidateCount + 1
+			end
+		end
+
+		-- Despawn on a hit the engine actually delivered (OnAttack), not on the size of the
+		-- returned candidate table. Only the attacker-side IsAttackTarget is documented to
+		-- remove entries from that table; the defender's IsHitTarget (the player's 1s i-frame)
+		-- is not. Counting candidates would make a spore vanish against an invulnerable player.
+		if self.HitLanded then
+			log("SporeShot landed for " .. tostring(math.floor(self.Damage)) .. " (candidates=" .. tostring(candidateCount) .. ")")
+			self.Entity:Destroy()
 			return
 		end
 
-		local hitCount = 0
-		for _, hit in pairs(hits) do
-			hitCount = hitCount + 1
+		if candidateCount > 0 then
+			log("SporeShot overlapped " .. tostring(candidateCount) .. " candidate(s) but no hit landed — target is likely mid i-frame; flying on")
 		end
+	end
 
-		if hitCount > 0 then
-			log("SporeShot hit " .. tostring(hitCount) .. " target(s) for " .. tostring(self.Damage))
-			self.Entity:Destroy()
-		end
+	method void OnAttack(Entity defender)
+		-- Engine hook, called on the attacker for a delivered attack. Parent declares no
+		-- @ExecSpace, so this override must not add one either (LEA-3014).
+		self.HitLanded = true
 	end
 
 	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)

@@ -49,6 +49,16 @@ script RockWarriorAI extends Component
 	@MinValue(0)
 	property number BlockedSampleInterval = 0.15
 
+	-- No wall verdict during this opening window. RigidbodyComponent.WalkAcceleration ramps
+	-- the charge up over time, so the first samples always look "stopped".
+	@MinValue(0)
+	property number ChargeGrace = 0.35
+
+	-- And the boss must actually have covered ground before a stop counts as a wall.
+	-- Without this, "never moved at all" is indistinguishable from "hit a wall".
+	@MinValue(0)
+	property number MinChargeDistance = 0.4
+
 	@HideFromInspector
 	property string AIState = "WAIT"
 
@@ -84,6 +94,15 @@ script RockWarriorAI extends Component
 
 	@HideFromInspector
 	property number AirTimer = 0
+
+	@HideFromInspector
+	property number ChargeElapsed = 0
+
+	@HideFromInspector
+	property number ChargeTravelled = 0
+
+	@HideFromInspector
+	property number ChargeStartX = 0
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
@@ -198,6 +217,8 @@ script RockWarriorAI extends Component
 		self.AIState = "CHARGE"
 		self.StateTimer = self.MaxChargeTime
 		self.BlockedTimer = 0
+		self.ChargeElapsed = 0
+		self.ChargeTravelled = 0
 		self:SetClip(self.MoveRUID)
 		self:SetTint(Color(1, 1, 1, 1))
 		self:SetChargingFlag(true)
@@ -205,6 +226,7 @@ script RockWarriorAI extends Component
 		local transform = self.Entity.TransformComponent
 		if isvalid(transform) then
 			self.LastSampleX = transform.WorldPosition.x
+			self.ChargeStartX = transform.WorldPosition.x
 		end
 
 		local movement = self.Entity.MovementComponent
@@ -223,16 +245,30 @@ script RockWarriorAI extends Component
 			movement:MoveToDirection(Vector2(self.ChargeDirection, 0), 0)
 		end
 
+		self.ChargeElapsed = self.ChargeElapsed + delta
+
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			self.ChargeTravelled = math.abs(transform.WorldPosition.x - self.ChargeStartX)
+		end
+
 		self.StateTimer = self.StateTimer - delta
 		if self.StateTimer <= 0 then
-			-- Ran the full distance without hitting anything: no stagger reward.
-			log("RockWarrior charge timed out with no wall hit")
+			-- Ran the full time without being stopped: no stagger reward.
+			log("RockWarrior charge timed out with no wall hit, travelled=" .. tostring(self.ChargeTravelled))
 			self:EnterWait()
 			return
 		end
 
-		local transform = self.Entity.TransformComponent
 		if not isvalid(transform) then
+			return
+		end
+
+		-- Opening window: WalkAcceleration ramps the charge up, so early samples always look
+		-- stopped. No wall verdict may be reached here.
+		if self.ChargeElapsed < self.ChargeGrace then
+			self.LastSampleX = transform.WorldPosition.x
+			self.BlockedTimer = 0
 			return
 		end
 
@@ -246,11 +282,21 @@ script RockWarriorAI extends Component
 		self.BlockedTimer = 0
 		self.LastSampleX = currentX
 
-		-- Wall detection is movement-based on purpose: it works whether the map's ends are
-		-- painted tiles or footholds, so it does not depend on how the walls were authored.
-		if travelled < self.BlockedEpsilon then
-			self:EnterStun(self.WallStunDuration, "wall")
+		if travelled >= self.BlockedEpsilon then
+			return
 		end
+
+		-- Stopped. Two very different causes, and they must not be confused:
+		-- covered ground then stopped = a real wall; never moved = the charge is broken.
+		if self.ChargeTravelled >= self.MinChargeDistance then
+			-- Movement-based on purpose: works whether the map ends are painted tiles or
+			-- footholds, so it does not depend on how the walls were authored.
+			self:EnterStun(self.WallStunDuration, "wall")
+			return
+		end
+
+		log_warning("RockWarrior charge is not moving (travelled=" .. tostring(self.ChargeTravelled) .. " after " .. tostring(self.ChargeElapsed) .. "s). NOT counting this as a wall hit — check MovementComponent / RigidbodyComponent.WalkAcceleration.")
+		self:EnterWait()
 	end
 
 	@ExecSpace("ServerOnly")
@@ -260,7 +306,9 @@ script RockWarriorAI extends Component
 		self.AIState = "LAUNCHED"
 		self.StateTimer = self.LaunchGrace
 		self.AirTimer = 0
-		self:StopMovement()
+		-- Deliberately NOT calling StopMovement() here. MovementComponent:Stop() is documented
+		-- only as "Stops moving" with no axis information, and the pad's upward velocity was
+		-- applied one frame earlier — cutting it here would silently cancel the whole launch.
 		self:SetChargingFlag(false)
 		self:SetClip(self.HitRUID)
 		self:SetTint(Color(0.7, 0.85, 1, 1))

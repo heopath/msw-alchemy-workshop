@@ -6362,9 +6362,9 @@
         }
       },
       {
-        "id": "011e5e1b-6d1c-4d3c-93c3-0b3e851037f2",
+        "id": "639476a9-9bf9-451f-8212-2ef0c80cda50",
         "path": "/maps/MapPerion/RockWarrior01",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.RockWarriorAI,script.RockWarriorAttack",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.RockWarriorAI,script.RockWarriorAttack,MOD.Core.TriggerComponent",
         "jsonString": {
           "name": "RockWarrior01",
           "path": "/maps/MapPerion/RockWarrior01",
@@ -6372,7 +6372,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 5,
+          "displayOrder": 6,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "rockwarrior",
@@ -6438,7 +6438,9 @@
                 "x": 0,
                 "y": 0
               },
-              "Enable": true
+              "Enable": true,
+              "WalkAcceleration": 20,
+              "IsBlockVerticalLine": true
             },
             {
               "@type": "MOD.Core.MovementComponent",
@@ -6502,6 +6504,22 @@
             {
               "@type": "script.RockWarriorAttack",
               "Enable": true
+            },
+            {
+              "@type": "MOD.Core.TriggerComponent",
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 1.56,
+                "y": 1.46
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": -0.09,
+                "y": 0.73
+              },
+              "IsLegacy": false,
+              "IsPassive": false
             }
           ],
           "@version": 1,
@@ -6509,7 +6527,7 @@
             "type": "Model",
             "entry_id": "rockwarrior",
             "sub_entity_id": null,
-            "root_entity_id": "011e5e1b-6d1c-4d3c-93c3-0b3e851037f2",
+            "root_entity_id": "639476a9-9bf9-451f-8212-2ef0c80cda50",
             "replaced_model_id": null
           }
         }
