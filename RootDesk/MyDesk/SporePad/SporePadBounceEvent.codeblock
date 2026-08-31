@@ -1,0 +1,33 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "codeblock://53d3a743-8329-4040-9769-1fa3ccb9ab0d",
+  "ContentType": "x-mod/codeblock",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "CoreVersion": {
+        "Major": 0,
+        "Minor": 2
+      },
+      "ScriptVersion": {
+        "Major": 1,
+        "Minor": 1
+      },
+      "Description": "",
+      "Id": "53d3a743-8329-4040-9769-1fa3ccb9ab0d",
+      "Language": 1,
+      "Name": "SporePadBounceEvent",
+      "Type": 3,
+      "Source": 0,
+      "Target": null
+    }
+  }
+}

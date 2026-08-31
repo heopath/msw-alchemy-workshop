@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://bf28c862358148ff88d15d3cbdf4a7c8",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://bf28c862358148ff88d15d3cbdf4a7c8",
+      "name": "Monsters",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}

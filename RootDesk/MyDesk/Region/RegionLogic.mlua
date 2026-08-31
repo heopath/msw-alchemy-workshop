@@ -1,0 +1,107 @@
+@Logic
+script RegionLogic extends Logic
+
+	-- Region -> map mapping lives in the RegionTable UserDataSet, never in this script.
+	property string TableName = "RegionTable"
+
+	method void OnBeginPlay()
+		-- Nothing to seed; the table is read on demand.
+		if self:IsServer() then
+			log("RegionLogic ready (server). Region data source: " .. self.TableName)
+		end
+	end
+
+	method any FindRegionRow(string regionId)
+		-- One RegionTable row per region. Returns nil when the row is missing.
+		local dataTable = _DataService:GetTable(self.TableName)
+		if dataTable == nil then
+			log_error("RegionLogic: UserDataSet '" .. self.TableName .. "' not found")
+			return nil
+		end
+
+		return dataTable:FindRow("regionId", regionId)
+	end
+
+	method string GetDisplayName(string regionId)
+		-- Falls back to the raw id so a missing row still renders something readable.
+		local row = self:FindRegionRow(regionId)
+		if row == nil then
+			return regionId
+		end
+
+		local name = row:GetItem("displayName")
+		if name == nil or name == "" then
+			return regionId
+		end
+
+		return name
+	end
+
+	method string GetMapName(string regionId)
+		-- Empty string means "no destination"; callers must treat that as a failure.
+		local row = self:FindRegionRow(regionId)
+		if row == nil then
+			return ""
+		end
+
+		local mapName = row:GetItem("mapName")
+		if mapName == nil then
+			return ""
+		end
+
+		return mapName
+	end
+
+	method number ReadNumber(any row, string columnName, number fallback)
+		-- Every dataset cell is a string; blank cells may come back as "" rather than nil.
+		if row == nil then
+			return fallback
+		end
+
+		local raw = row:GetItem(columnName)
+		if raw == nil or raw == "" then
+			return fallback
+		end
+
+		local parsed = tonumber(raw)
+		if parsed == nil then
+			return fallback
+		end
+
+		return parsed
+	end
+
+	@ExecSpace("Server")
+	method void RequestEnterRegion(string regionId)
+		-- The region screen is UI, so it cannot call the server itself (UI entities are
+		-- client-only). It routes through this Logic, which owns the actual move.
+		local player = _UserService:GetUserEntityByUserId(senderUserId)
+		if not isvalid(player) then
+			return
+		end
+
+		local row = self:FindRegionRow(regionId)
+		if row == nil then
+			log_error("RegionLogic: no RegionTable row for regionId=" .. regionId)
+			return
+		end
+
+		local mapName = row:GetItem("mapName")
+		if mapName == nil or mapName == "" then
+			log_error("RegionLogic: RegionTable row for " .. regionId .. " has an empty mapName")
+			return
+		end
+
+		if player.CurrentMapName == mapName then
+			log("RegionLogic: already in " .. mapName .. ", move skipped")
+			return
+		end
+
+		local spawnX = self:ReadNumber(row, "spawnX", 0)
+		local spawnY = self:ReadNumber(row, "spawnY", 0.4)
+
+		_TeleportService:TeleportToMapPosition(player, Vector3(spawnX, spawnY, 0), mapName)
+		log("RegionLogic moved " .. player.Name .. " to region '" .. regionId .. "' (map " .. mapName .. ")")
+	end
+
+end

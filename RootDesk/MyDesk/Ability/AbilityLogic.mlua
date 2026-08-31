@@ -1,0 +1,297 @@
+@Logic
+script AbilityLogic extends Logic
+
+	-- Run state. A list structure from the start: the prototype only ships SporePad,
+	-- but five abilities land here later without a shape change.
+	@Sync
+	property SyncTable<string, boolean> OwnedAbilities
+
+	@Sync
+	property SyncTable<string, boolean> ClearedRegions
+
+	-- Ability numbers live in the AbilityTable UserDataSet, never in this script.
+	property string TableName = "AbilityTable"
+
+	-- Display only; the actual binding is KeyboardKey.F in OnKeyDown.
+	property string PlaceKeyName = "F"
+
+	method void OnBeginPlay()
+		-- Server owns run state; client owns input. A Logic runs on both sides, so branch here.
+		if self:IsServer() then
+			log("AbilityLogic ready (server). Ability data source: " .. self.TableName)
+		end
+
+		if self:IsClient() then
+			-- KeyDownEvent is a service event, so it connects on _InputService, not on a Component.
+			self._T.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+			log("AbilityLogic ready (client). Place key: " .. self.PlaceKeyName)
+		end
+	end
+
+	method void OnEndPlay()
+		-- Releases the input subscription.
+		if self._T.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self._T.keyHandler)
+			self._T.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- F places the spore pad. The server re-checks ownership, ground and cooldown.
+		if event.key ~= KeyboardKey.F then
+			return
+		end
+
+		self:RequestPlaceAbility("SporePad")
+	end
+
+	-- ---------- run state ----------
+
+	method boolean HasAbility(string abilityId)
+		-- Readable from either side; the property is @Sync so clients see the granted set.
+		if self.OwnedAbilities[abilityId] == true then
+			return true
+		end
+
+		return false
+	end
+
+	method boolean IsRegionCleared(string regionId)
+		-- Used by the region select screen to mark a region as already beaten.
+		if self.ClearedRegions[regionId] == true then
+			return true
+		end
+
+		return false
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ReportBossDefeated(string regionId)
+		-- Boss kill -> region cleared + that region's ability granted.
+		-- The region/ability pairing is a row in AbilityTable, not a branch in this script.
+		self.ClearedRegions[regionId] = true
+
+		local row = self:FindAbilityRowByRegion(regionId)
+		if row == nil then
+			log_warning("AbilityLogic: no AbilityTable row for regionId=" .. regionId .. " (region cleared, no ability granted)")
+			return
+		end
+
+		local abilityId = row:GetItem("abilityId")
+		if abilityId == nil or abilityId == "" then
+			log_error("AbilityLogic: AbilityTable row for " .. regionId .. " has an empty abilityId")
+			return
+		end
+
+		self.OwnedAbilities[abilityId] = true
+		log("AbilityLogic granted ability '" .. abilityId .. "' for clearing region '" .. regionId .. "'")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ResetRun()
+		-- Roguelike death reset. Abilities are lost; cleared regions are lost with them.
+		-- Magic orbs are meta currency and are deliberately not stored here.
+		-- Keys are walked from the dataset rather than SyncTable:Clear(), which the
+		-- dictionary form does not expose (LIA-1115).
+		local dataTable = _DataService:GetTable(self.TableName)
+		if dataTable == nil then
+			log_error("AbilityLogic: UserDataSet '" .. self.TableName .. "' not found")
+			return
+		end
+
+		local rows = dataTable:GetAllRow()
+		if rows == nil then
+			return
+		end
+
+		for _, row in pairs(rows) do
+			local abilityId = row:GetItem("abilityId")
+			if abilityId ~= nil and abilityId ~= "" then
+				self.OwnedAbilities[abilityId] = false
+			end
+
+			local regionId = row:GetItem("regionId")
+			if regionId ~= nil and regionId ~= "" then
+				self.ClearedRegions[regionId] = false
+			end
+		end
+
+		log("AbilityLogic: run reset, all abilities and region clears dropped")
+	end
+
+	-- ---------- ability data ----------
+
+	method any FindAbilityRow(string abilityId)
+		-- One AbilityTable row per ability. Returns nil when the row is missing.
+		local dataTable = _DataService:GetTable(self.TableName)
+		if dataTable == nil then
+			log_error("AbilityLogic: UserDataSet '" .. self.TableName .. "' not found")
+			return nil
+		end
+
+		return dataTable:FindRow("abilityId", abilityId)
+	end
+
+	method any FindAbilityRowByRegion(string regionId)
+		-- Reverse lookup used on boss defeat.
+		local dataTable = _DataService:GetTable(self.TableName)
+		if dataTable == nil then
+			log_error("AbilityLogic: UserDataSet '" .. self.TableName .. "' not found")
+			return nil
+		end
+
+		return dataTable:FindRow("regionId", regionId)
+	end
+
+	method number ReadNumber(any row, string columnName, number fallback)
+		-- Every dataset cell is a string; blank cells may come back as "" rather than nil.
+		if row == nil then
+			return fallback
+		end
+
+		local raw = row:GetItem(columnName)
+		if raw == nil or raw == "" then
+			return fallback
+		end
+
+		local parsed = tonumber(raw)
+		if parsed == nil then
+			return fallback
+		end
+
+		return parsed
+	end
+
+	-- ---------- placement ----------
+
+	@ExecSpace("Server")
+	method void RequestPlaceAbility(string abilityId)
+		-- Client asked to place. The server is the only side that validates and spawns.
+		local player = _UserService:GetUserEntityByUserId(senderUserId)
+		if not isvalid(player) then
+			return
+		end
+
+		if self:HasAbility(abilityId) == false then
+			log("AbilityLogic: place refused, ability '" .. abilityId .. "' not owned yet")
+			return
+		end
+
+		local row = self:FindAbilityRow(abilityId)
+		if row == nil then
+			log_error("AbilityLogic: no AbilityTable row for abilityId=" .. abilityId)
+			return
+		end
+
+		local cooldown = self:ReadNumber(row, "cooldown", 3)
+		local now = _UtilLogic.ElapsedSeconds
+
+		if self._T.cooldownUntil == nil then
+			self._T.cooldownUntil = {}
+		end
+
+		local readyAt = self._T.cooldownUntil[senderUserId]
+		if readyAt ~= nil and now < readyAt then
+			log("AbilityLogic: place refused, '" .. abilityId .. "' on cooldown for " .. tostring(readyAt - now) .. "s")
+			return
+		end
+
+		if self:ReadNumber(row, "groundOnly", 1) >= 1 then
+			local rb = player.RigidbodyComponent
+			if rb == nil or rb:IsOnGround() == false then
+				log("AbilityLogic: place refused, player is not on the ground")
+				return
+			end
+		end
+
+		local placed = self:SpawnPad(player, row)
+		if placed == false then
+			return
+		end
+
+		self._T.cooldownUntil[senderUserId] = now + cooldown
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean SpawnPad(Entity player, any row)
+		-- Places the pad at the player's feet, enforcing the simultaneous-pad cap first.
+		local map = player.CurrentMap
+		if not isvalid(map) then
+			log_error("AbilityLogic: player has no CurrentMap")
+			return false
+		end
+
+		local modelId = row:GetItem("modelId")
+		if modelId == nil or modelId == "" then
+			log_error("AbilityLogic: AbilityTable row has an empty modelId")
+			return false
+		end
+
+		local maxCount = self:ReadNumber(row, "maxCount", 2)
+		self:PrunePads(player)
+		self:EnforcePadCap(player, maxCount)
+
+		local position = player.TransformComponent.WorldPosition
+
+		if self._T.padSeq == nil then
+			self._T.padSeq = 0
+		end
+		self._T.padSeq = self._T.padSeq + 1
+
+		local name = "SporePad_" .. tostring(self._T.padSeq)
+		local pad = _SpawnService:SpawnByModelId(modelId, name, Vector3(position.x, position.y, position.z), map)
+		if pad == nil then
+			log_error("AbilityLogic: SpawnByModelId('" .. modelId .. "') returned nil")
+			return false
+		end
+
+		local padComponent = pad.SporePadComponent
+		if isvalid(padComponent) then
+			padComponent.BounceForce = self:ReadNumber(row, "bounceForce", 6)
+			padComponent.Duration = self:ReadNumber(row, "duration", 20)
+		end
+
+		table.insert(self._T.pads[player.Name], pad)
+		log("AbilityLogic placed " .. name .. " at x=" .. tostring(position.x) .. " for " .. player.Name)
+		return true
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PrunePads(Entity player)
+		-- Drops entries whose pad already expired or was destroyed.
+		if self._T.pads == nil then
+			self._T.pads = {}
+		end
+
+		local key = player.Name
+		if self._T.pads[key] == nil then
+			self._T.pads[key] = {}
+			return
+		end
+
+		local alive = {}
+		for _, pad in ipairs(self._T.pads[key]) do
+			if isvalid(pad) then
+				table.insert(alive, pad)
+			end
+		end
+
+		self._T.pads[key] = alive
+	end
+
+	@ExecSpace("ServerOnly")
+	method void EnforcePadCap(Entity player, number maxCount)
+		-- Placing beyond the cap removes the oldest pad first.
+		local pads = self._T.pads[player.Name]
+
+		while #pads >= maxCount do
+			local oldest = table.remove(pads, 1)
+			if isvalid(oldest) then
+				log("AbilityLogic: pad cap " .. tostring(maxCount) .. " reached, removing " .. oldest.Name)
+				oldest:Destroy()
+			end
+		end
+	end
+
+end

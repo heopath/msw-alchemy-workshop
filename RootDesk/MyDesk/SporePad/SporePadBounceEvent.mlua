@@ -1,0 +1,6 @@
+@Event
+script SporePadBounceEvent extends EventType
+
+	property number BounceForce = 0
+
+end

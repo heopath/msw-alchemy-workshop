@@ -1,0 +1,84 @@
+@Component
+script SporePadComponent extends Component
+
+	-- Renamed from JumpPadComponent in T3. Values come from the AbilityTable
+	-- UserDataSet via _AbilityLogic, which overwrites these on spawn.
+	property number BounceForce = 6.0
+
+	property number Duration = 20
+
+	property any triggerHandler = nil
+
+	@HideFromInspector
+	property integer expireTimerId = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Subscribes to the sibling TriggerComponent's enter event and arms the despawn timer.
+		self.triggerHandler = self.Entity:ConnectEvent(TriggerEnterEvent, self.OnTriggerEnter)
+
+		if self.Duration > 0 then
+			self.expireTimerId = _TimerService:SetTimerOnce(function()
+				self:Expire()
+			end, self.Duration)
+		end
+
+		log("SporePad placed: " .. self.Entity.Name .. ", force=" .. tostring(self.BounceForce) .. ", duration=" .. tostring(self.Duration))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- Releases the trigger subscription and the despawn timer.
+		if self.triggerHandler then
+			self.Entity:DisconnectEvent(TriggerEnterEvent, self.triggerHandler)
+			self.triggerHandler = nil
+		end
+
+		if self.expireTimerId ~= 0 then
+			_TimerService:ClearTimer(self.expireTimerId)
+			self.expireTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void Expire()
+		-- Lifetime ran out. _AbilityLogic prunes its list with isvalid, so no callback is needed.
+		self.expireTimerId = 0
+		log("SporePad expired: " .. self.Entity.Name)
+		self.Entity:Destroy()
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnTriggerEnter(TriggerEnterEvent event)
+		-- Bounces whichever entity stepped into the pad's trigger area straight upward.
+		-- Player and monster are treated the same; the weakness link in T6 relies on this.
+		local other = event.TriggerBodyEntity
+		if isvalid(other) == false then
+			return
+		end
+
+		local rb = other.RigidbodyComponent
+		if rb == nil then
+			return
+		end
+
+		-- MoveVelocity is the walking velocity the movement logic rewrites every frame, so it is
+		-- cleared first and never used to carry the bounce itself.
+		rb.MoveVelocity = Vector2.zero
+
+		-- MapleTile bodies expose JustJump for a forced vertical jump. It reports whether the jump
+		-- was accepted, so fall back to a raw upward force when it is refused (e.g. mid-air).
+		local jumped = rb:JustJump(Vector2(0, self.BounceForce))
+		if jumped == false then
+			rb:SetForce(Vector2(0, self.BounceForce))
+		end
+
+		-- Tells the bounced entity it was launched by a spore pad. RockWarrior listens for this.
+		local bounce = SporePadBounceEvent()
+		bounce.BounceForce = self.BounceForce
+		other:SendEvent(bounce)
+
+		log("SporePad bounced entity: " .. other.Name .. " with force " .. tostring(self.BounceForce) .. ", JustJump=" .. tostring(jumped))
+	end
+
+end

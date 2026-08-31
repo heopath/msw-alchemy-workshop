@@ -1,0 +1,6 @@
+@Event
+script BossDefeatedEvent extends EventType
+
+	property string RegionName = ""
+
+end

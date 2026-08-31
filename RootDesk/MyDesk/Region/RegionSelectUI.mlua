@@ -1,0 +1,119 @@
+@Component
+script RegionSelectUI extends Component
+
+	-- UI entities are client-only, so every engine-invoked method here is ClientOnly and
+	-- the actual map move is delegated to _RegionLogic (a Logic outside the UI tree).
+	property Entity window = "1ccccb91-e129-42b2-963a-4b08afd0b029"
+
+	property ButtonComponent btnHenesys = "42c84ce9-7f02-4933-ad2e-ed4ae370e499"
+
+	property TextGUIRendererComponent labelHenesys = "42c84ce9-7f02-4933-ad2e-ed4ae370e499"
+
+	property ButtonComponent btnPerion = "44c04e51-7193-49c2-90aa-0db39d7b7bb4"
+
+	property TextGUIRendererComponent labelPerion = "44c04e51-7193-49c2-90aa-0db39d7b7bb4"
+
+	property string RegionA = "Henesys"
+
+	property string RegionB = "Perion"
+
+	property string ClearedSuffix = "  (클리어)"
+
+	property any henesysHandler = nil
+
+	property any perionHandler = nil
+
+	property any keyHandler = nil
+
+	property any refreshTimerId = nil
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		-- Opens on the region screen so the player picks a region before playing.
+		self.henesysHandler = self.btnHenesys.Entity:ConnectEvent(ButtonClickEvent, function()
+			self:OnRegionChosen(self.RegionA)
+		end)
+
+		self.perionHandler = self.btnPerion.Entity:ConnectEvent(ButtonClickEvent, function()
+			self:OnRegionChosen(self.RegionB)
+		end)
+
+		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+
+		self:RefreshLabels()
+		self.window.Enable = true
+
+		-- Cleared state arrives from the server through _AbilityLogic's @Sync property,
+		-- so the labels are re-read on a slow tick rather than once at start.
+		self.refreshTimerId = _TimerService:SetTimerRepeat(function()
+			self:RefreshLabels()
+		end, 0.5)
+
+		log("RegionSelectUI ready (client). Toggle key: M")
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnEndPlay()
+		-- Releases every subscription and the refresh timer.
+		if self.henesysHandler ~= nil then
+			self.btnHenesys.Entity:DisconnectEvent(ButtonClickEvent, self.henesysHandler)
+			self.henesysHandler = nil
+		end
+
+		if self.perionHandler ~= nil then
+			self.btnPerion.Entity:DisconnectEvent(ButtonClickEvent, self.perionHandler)
+			self.perionHandler = nil
+		end
+
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+
+		if self.refreshTimerId ~= nil then
+			_TimerService:ClearTimer(self.refreshTimerId)
+			self.refreshTimerId = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- M toggles the region screen.
+		if event.key ~= KeyboardKey.M then
+			return
+		end
+
+		self.window.Enable = not self.window.Enable
+		if self.window.Enable then
+			self:RefreshLabels()
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void RefreshLabels()
+		-- Display names come from RegionTable; the cleared mark comes from run state.
+		self.labelHenesys.Text = self:BuildLabel(self.RegionA)
+		self.labelPerion.Text = self:BuildLabel(self.RegionB)
+	end
+
+	@ExecSpace("ClientOnly")
+	method string BuildLabel(string regionId)
+		-- "헤네시스" / "헤네시스  (클리어)"
+		local label = _RegionLogic:GetDisplayName(regionId)
+
+		if _AbilityLogic:IsRegionCleared(regionId) then
+			label = label .. self.ClearedSuffix
+		end
+
+		return label
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnRegionChosen(string regionId)
+		-- Closes the screen first so the player sees the map they land on.
+		self.window.Enable = false
+		log("RegionSelectUI: requested region " .. regionId)
+		_RegionLogic:RequestEnterRegion(regionId)
+	end
+
+end

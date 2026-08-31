@@ -1,0 +1,501 @@
+@Component
+script RockWarriorAI extends Component
+
+	-- Pattern A (script-driven SpriteRUID). No AIChase/AIWander on the model.
+	property string StandRUID = "df23159906aa41b284992ec6ace27bc5"
+
+	property string MoveRUID = "acd2364612fa46c3847e6f1d666ae9a4"
+
+	property string ChargeRUID = "74133f0066014d7da0451ad58a5e729a"
+
+	property string HitRUID = "7ddadcc38f7c413bacb027c69936f41d"
+
+	property string DieRUID = "725c9fc720714b5e81031f0b026976b2"
+
+	property string RegionName = "Perion"
+
+	@MinValue(0)
+	property number ChargeInterval = 2.5
+
+	@MinValue(0)
+	property number ChargeIntervalPhase2 = 1.8
+
+	@MinValue(0)
+	property number ChargeTelegraph = 0.6
+
+	@MinValue(0)
+	property number ChargeSpeed = 4.0
+
+	@MinValue(0)
+	property number MaxChargeTime = 3.0
+
+	@MinValue(0)
+	property number WallStunDuration = 1.5
+
+	-- T6 weakness: a spore pad launches the boss, and the landing stagger is far longer.
+	@MinValue(0)
+	property number SporePadStunDuration = 5.0
+
+	@MinValue(0)
+	property number StunDamageMultiplier = 3.0
+
+	@MinValue(0)
+	property number PhaseThreshold = 0.5
+
+	-- How little the boss may move in one sample before the charge counts as wall-blocked.
+	@MinValue(0)
+	property number BlockedEpsilon = 0.02
+
+	@MinValue(0)
+	property number BlockedSampleInterval = 0.15
+
+	@HideFromInspector
+	property string AIState = "WAIT"
+
+	@HideFromInspector
+	property number StateTimer = 0
+
+	@HideFromInspector
+	property number ChargeDirection = 1
+
+	@HideFromInspector
+	property number BlockedTimer = 0
+
+	@HideFromInspector
+	property number LastSampleX = 0
+
+	@HideFromInspector
+	property boolean Phase2 = false
+
+	@HideFromInspector
+	property boolean DeathPlayed = false
+
+	-- Minimum airtime before IsOnGround is trusted; on the bounce frame it still reads true.
+	@MinValue(0)
+	property number LaunchGrace = 0.25
+
+	-- Safety net so a missed landing can never strand the boss in LAUNCHED.
+	@MinValue(0)
+	property number MaxAirTime = 3.0
+
+	-- Set while the boss is airborne because a spore pad launched it (T6).
+	@HideFromInspector
+	property boolean SporeLaunched = false
+
+	@HideFromInspector
+	property number AirTimer = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Opens waiting; the only pattern is the charge.
+		self.Phase2 = false
+		self.DeathPlayed = false
+		self.SporeLaunched = false
+		self:EnterWait()
+
+		local monster = self.Entity.Monster
+		local maxHp = 0
+		if isvalid(monster) then
+			maxHp = monster.MaxHp
+		end
+
+		log("RockWarriorAI ready on " .. self.Entity.Name .. ", MaxHp=" .. tostring(maxHp) .. ", region=" .. self.RegionName)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Death check, phase check, then the charge state machine.
+		local monster = self.Entity.Monster
+
+		if isvalid(monster) and monster.IsDead then
+			if self.DeathPlayed == false then
+				self.DeathPlayed = true
+				self.AIState = "DEAD"
+				self:StopMovement()
+				self:SetChargingFlag(false)
+				self:SetDamageMultiplier(1)
+				self:SetClip(self.DieRUID)
+				self:SetTint(Color(1, 1, 1, 1))
+				self:AnnounceDefeat()
+			end
+			return
+		end
+
+		self:CheckPhase()
+
+		-- A spore-pad launch interrupts whatever the boss was doing, mid-charge included.
+		if self.SporeLaunched and self.AIState ~= "LAUNCHED" and self.AIState ~= "STUN" then
+			self:BeginLaunched()
+			return
+		end
+
+		if self.AIState == "LAUNCHED" then
+			self:TickLaunched(delta)
+			return
+		end
+
+		if self.AIState == "WAIT" then
+			self:FaceNearestPlayer()
+			self.StateTimer = self.StateTimer - delta
+			if self.StateTimer <= 0 then
+				self:BeginTelegraph()
+			end
+			return
+		end
+
+		if self.AIState == "TELEGRAPH" then
+			self.StateTimer = self.StateTimer - delta
+			if self.StateTimer <= 0 then
+				self:BeginCharge()
+			end
+			return
+		end
+
+		if self.AIState == "CHARGE" then
+			self:TickCharge(delta)
+			return
+		end
+
+		if self.AIState == "STUN" then
+			self.StateTimer = self.StateTimer - delta
+			if self.StateTimer <= 0 then
+				self:EnterWait()
+			end
+			return
+		end
+	end
+
+	-- ---------- states ----------
+
+	@ExecSpace("ServerOnly")
+	method void EnterWait()
+		-- Idle between charges.
+		self.AIState = "WAIT"
+		self.StateTimer = self:CurrentChargeInterval()
+		self.SporeLaunched = false
+		self:StopMovement()
+		self:SetChargingFlag(false)
+		self:SetDamageMultiplier(1)
+		self:SetClip(self.StandRUID)
+		self:SetTint(Color(1, 1, 1, 1))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginTelegraph()
+		-- 0.6s tell so the player has time to jump or drop a pad in the lane.
+		self.AIState = "TELEGRAPH"
+		self.StateTimer = self.ChargeTelegraph
+		self.ChargeDirection = self:FacingSign()
+		self:StopMovement()
+		self:SetClip(self.ChargeRUID)
+		self:SetTint(Color(1, 0.55, 0.35, 1))
+		log("RockWarrior telegraphing charge for " .. tostring(self.ChargeTelegraph) .. "s, direction=" .. tostring(self.ChargeDirection))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginCharge()
+		-- Straight horizontal run until a wall, a spore pad, or MaxChargeTime stops it.
+		self.AIState = "CHARGE"
+		self.StateTimer = self.MaxChargeTime
+		self.BlockedTimer = 0
+		self:SetClip(self.MoveRUID)
+		self:SetTint(Color(1, 1, 1, 1))
+		self:SetChargingFlag(true)
+
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			self.LastSampleX = transform.WorldPosition.x
+		end
+
+		local movement = self.Entity.MovementComponent
+		if isvalid(movement) then
+			movement.InputSpeed = self.ChargeSpeed
+		end
+
+		log("RockWarrior charging, direction=" .. tostring(self.ChargeDirection) .. " speed=" .. tostring(self.ChargeSpeed))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void TickCharge(number delta)
+		-- Drives the run and watches for "stopped moving" as the wall signal.
+		local movement = self.Entity.MovementComponent
+		if isvalid(movement) then
+			movement:MoveToDirection(Vector2(self.ChargeDirection, 0), 0)
+		end
+
+		self.StateTimer = self.StateTimer - delta
+		if self.StateTimer <= 0 then
+			-- Ran the full distance without hitting anything: no stagger reward.
+			log("RockWarrior charge timed out with no wall hit")
+			self:EnterWait()
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		self.BlockedTimer = self.BlockedTimer + delta
+		if self.BlockedTimer < self.BlockedSampleInterval then
+			return
+		end
+
+		local currentX = transform.WorldPosition.x
+		local travelled = math.abs(currentX - self.LastSampleX)
+		self.BlockedTimer = 0
+		self.LastSampleX = currentX
+
+		-- Wall detection is movement-based on purpose: it works whether the map's ends are
+		-- painted tiles or footholds, so it does not depend on how the walls were authored.
+		if travelled < self.BlockedEpsilon then
+			self:EnterStun(self.WallStunDuration, "wall")
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginLaunched()
+		-- T6: the spore pad threw the boss into the air. The stagger starts on landing,
+		-- not on the bounce, so the player sees cause and effect.
+		self.AIState = "LAUNCHED"
+		self.StateTimer = self.LaunchGrace
+		self.AirTimer = 0
+		self:StopMovement()
+		self:SetChargingFlag(false)
+		self:SetClip(self.HitRUID)
+		self:SetTint(Color(0.7, 0.85, 1, 1))
+		log("RockWarrior launched by spore pad, waiting for landing")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void TickLaunched(number delta)
+		-- LaunchGrace covers the first frames, where IsOnGround still reads true.
+		if self.StateTimer > 0 then
+			self.StateTimer = self.StateTimer - delta
+			return
+		end
+
+		self.AirTimer = self.AirTimer + delta
+
+		local grounded = false
+		local rb = self.Entity.RigidbodyComponent
+		if isvalid(rb) then
+			grounded = rb:IsOnGround()
+		end
+
+		if grounded then
+			self:EnterStun(self.SporePadStunDuration, "spore pad")
+			return
+		end
+
+		if self.AirTimer >= self.MaxAirTime then
+			-- Safety net: never leave the boss stuck in LAUNCHED if the landing is missed.
+			self:EnterStun(self.SporePadStunDuration, "spore pad (landing timed out)")
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	@EventSender("Self")
+	handler HandleSporePadBounceEvent(SporePadBounceEvent event)
+		-- Sent by SporePadComponent to whatever it bounced. This is the whole weakness link:
+		-- the pad does not know about the boss, and the boss does not know about the pad.
+		if self.DeathPlayed then
+			return
+		end
+
+		self.SporeLaunched = true
+		log("RockWarrior hit a spore pad, bounce force=" .. tostring(event.BounceForce))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void EnterStun(number duration, string cause)
+		-- The stagger window. Incoming damage is tripled while it lasts.
+		self.AIState = "STUN"
+		self.StateTimer = duration
+		self.SporeLaunched = false
+		self:StopMovement()
+		self:SetChargingFlag(false)
+		self:SetClip(self.HitRUID)
+		self:SetTint(Color(0.6, 0.75, 1, 1))
+		self:SetDamageMultiplier(self.StunDamageMultiplier)
+		log("RockWarrior staggered by " .. cause .. " for " .. tostring(duration) .. "s, damage x" .. tostring(self.StunDamageMultiplier))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CheckPhase()
+		-- Below PhaseThreshold of MaxHp the charge cycle shortens. One-way switch.
+		if self.Phase2 then
+			return
+		end
+
+		local monster = self.Entity.Monster
+		if not isvalid(monster) then
+			return
+		end
+
+		if monster.MaxHp <= 0 then
+			return
+		end
+
+		if monster.Hp > monster.MaxHp * self.PhaseThreshold then
+			return
+		end
+
+		self.Phase2 = true
+		log("RockWarrior entered phase 2 at Hp=" .. tostring(monster.Hp) .. ", charge cycle " .. tostring(self.ChargeInterval) .. "s -> " .. tostring(self.ChargeIntervalPhase2) .. "s")
+	end
+
+	@ExecSpace("ServerOnly")
+	method number CurrentChargeInterval()
+		-- Phase 2 shortens the gap between charges.
+		if self.Phase2 then
+			return self.ChargeIntervalPhase2
+		end
+
+		return self.ChargeInterval
+	end
+
+	-- ---------- helpers ----------
+
+	@ExecSpace("ServerOnly")
+	method void SetDamageMultiplier(number multiplier)
+		-- script.Monster owns Hp, so the stagger bonus is applied there and nowhere else.
+		local monster = self.Entity.Monster
+		if isvalid(monster) then
+			monster.DamageMultiplier = multiplier
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetChargingFlag(boolean charging)
+		-- Tells the attack component whether to tag its hits as a ground-only charge.
+		local attack = self.Entity.RockWarriorAttack
+		if isvalid(attack) then
+			attack.IsCharging = charging
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void StopMovement()
+		-- Cuts the run without touching Transform directly (the Body owns position).
+		local movement = self.Entity.MovementComponent
+		if isvalid(movement) then
+			movement:Stop()
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method number FacingSign()
+		-- Mob sprites are authored facing left, so Scale.x is inverted to face right.
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return 1
+		end
+
+		if transform.Scale.x > 0 then
+			return -1
+		end
+
+		return 1
+	end
+
+	@ExecSpace("ServerOnly")
+	method void FaceNearestPlayer()
+		-- Turns toward the closest player. Only called while waiting, never mid-telegraph.
+		local target = self:FindNearestPlayer()
+		if not isvalid(target) then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local face = 1
+		if target.TransformComponent.WorldPosition.x < transform.WorldPosition.x then
+			face = -1
+		end
+
+		local scale = transform.Scale
+		transform.Scale = Vector3(math.abs(scale.x) * -face, scale.y, scale.z)
+	end
+
+	@ExecSpace("ServerOnly")
+	method Entity FindNearestPlayer()
+		-- Canonical "players on this map" lookup; returns nil when the map is empty.
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return nil
+		end
+
+		local mapComponent = map.MapComponent
+		if not isvalid(mapComponent) then
+			return nil
+		end
+
+		local users = _UserService:GetUsersByMapComponent(mapComponent)
+		if users == nil then
+			return nil
+		end
+
+		local myPosition = self.Entity.TransformComponent.WorldPosition
+		local nearest = nil
+		local nearestDistance = 0
+
+		for _, user in pairs(users) do
+			if isvalid(user) then
+				local userPosition = user.TransformComponent.WorldPosition
+				local dx = userPosition.x - myPosition.x
+				local dy = userPosition.y - myPosition.y
+				local distance = dx * dx + dy * dy
+
+				if nearest == nil or distance < nearestDistance then
+					nearest = user
+					nearestDistance = distance
+				end
+			end
+		end
+
+		return nearest
+	end
+
+	@ExecSpace("ServerOnly")
+	method void AnnounceDefeat()
+		-- Reward signal, same shape as the Henesys boss.
+		local defeated = BossDefeatedEvent()
+		defeated.RegionName = self.RegionName
+
+		local map = self.Entity.CurrentMap
+		if isvalid(map) then
+			map:SendEvent(defeated)
+		end
+
+		_AbilityLogic:ReportBossDefeated(self.RegionName)
+
+		log("BossDefeatedEvent sent: region=" .. self.RegionName)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetClip(string ruid)
+		-- Pattern A drives the visible clip by assigning SpriteRUID directly.
+		if ruid == "" then
+			return
+		end
+
+		local sprite = self.Entity.SpriteRendererComponent
+		if isvalid(sprite) then
+			sprite.SpriteRUID = ruid
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetTint(Color tint)
+		-- Telegraph and stagger feedback. Color is @Sync so clients see it.
+		local sprite = self.Entity.SpriteRendererComponent
+		if isvalid(sprite) then
+			sprite.Color = tint
+		end
+	end
+
+end

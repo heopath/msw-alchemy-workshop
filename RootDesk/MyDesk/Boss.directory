@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://a0fcef46c22d4b19ab99b92b8346cecb",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "0.1.0.0",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://a0fcef46c22d4b19ab99b92b8346cecb",
+      "name": "Boss",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}

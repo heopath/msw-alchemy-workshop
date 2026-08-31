@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "model://jumppad",
+  "EntryKey": "model://sporepad",
   "ContentType": "x-mod/model",
   "Content": "",
   "Usage": 0,
@@ -14,14 +14,14 @@
     "Use": "Json",
     "Json": {
       "Version": 1,
-      "Name": "JumpPad",
+      "Name": "SporePad",
       "BaseModelId": null,
-      "Id": "jumppad",
+      "Id": "sporepad",
       "Components": [
         "MOD.Core.TransformComponent",
         "MOD.Core.SpriteRendererComponent",
         "MOD.Core.TriggerComponent",
-        "script.JumpPadComponent"
+        "script.SporePadComponent"
       ],
       "Properties": [
         {
@@ -142,6 +142,24 @@
             "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
           "Value": false
+        },
+        {
+          "TargetType": "script.SporePadComponent",
+          "Name": "BounceForce",
+          "ValueType": {
+            "$type": "MODNativeType",
+            "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          },
+          "Value": 6
+        },
+        {
+          "TargetType": "script.SporePadComponent",
+          "Name": "Duration",
+          "ValueType": {
+            "$type": "MODNativeType",
+            "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          },
+          "Value": 20
         }
       ],
       "EventLinks": [],

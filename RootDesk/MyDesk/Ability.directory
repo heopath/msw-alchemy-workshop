@@ -1,20 +1,20 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "directory://c057d53c9aa44524983594362a3f36b1",
+  "EntryKey": "directory://faca7c4f4d704624b917d17c6cc3149d",
   "ContentType": "x-mod/directory",
   "Content": "",
   "Usage": 0,
   "UsePublish": 1,
   "UseService": 0,
   "CoreVersion": "26.7.0.0",
-  "StudioVersion": "0.1.0.0",
+  "StudioVersion": "",
   "DynamicLoading": 0,
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "entry_id": "directory://c057d53c9aa44524983594362a3f36b1",
-      "name": "JumpPad",
+      "entry_id": "directory://faca7c4f4d704624b917d17c6cc3149d",
+      "name": "Ability",
       "lock": false,
       "folding": false,
       "nameEditable": true

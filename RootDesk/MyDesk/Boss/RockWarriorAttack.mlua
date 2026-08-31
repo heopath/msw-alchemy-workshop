@@ -1,0 +1,94 @@
+@Component
+script RockWarriorAttack extends AttackComponent
+
+	-- number, not integer: an `integer` property produced LWA-4012 against the .model value.
+	@MinValue(0)
+	property number ContactDamage = 20
+
+	@MinValue(0)
+	property number ContactInterval = 0.3
+
+	property Vector2 ContactBoxSize = Vector2(1.56, 1.46)
+
+	property Vector2 ContactBoxOffset = Vector2(-0.09, 0.73)
+
+	-- Set by RockWarriorAI while a charge is running. A charge only connects with
+	-- grounded players, which is what makes the spore pad usable as an escape.
+	@HideFromInspector
+	property boolean IsCharging = false
+
+	@HideFromInspector
+	property any ContactShape = nil
+
+	@HideFromInspector
+	property integer ContactTimerId = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Builds the reusable contact box and starts the damage tick.
+		self.ContactShape = BoxShape(Vector2.zero, self.ContactBoxSize, 0)
+
+		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
+			self:ContactTick()
+		end, self.ContactInterval)
+
+		log("RockWarriorAttack ready: contact=" .. tostring(self.ContactDamage))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- Releases the contact tick timer.
+		if self.ContactTimerId ~= 0 then
+			_TimerService:ClearTimer(self.ContactTimerId)
+			self.ContactTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ContactTick()
+		-- Body-contact damage. Tagged "charge" while charging so the ground-only rule applies.
+		local monster = self.Entity.Monster
+		if isvalid(monster) and monster.IsDead then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.ContactShape.Size = self.ContactBoxSize
+		self.ContactShape.Angle = 0
+		self.ContactShape.Position = Vector2(worldPosition.x + self.ContactBoxOffset.x, worldPosition.y + self.ContactBoxOffset.y)
+
+		local tag = "contact"
+		if self.IsCharging then
+			tag = "charge"
+		end
+
+		self:AttackFast(self.ContactShape, tag, CollisionGroups.Player)
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- Contact and charge share the same value; parent declares no @ExecSpace (LEA-3014).
+		return math.floor(self.ContactDamage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- Only players, and a charge never reaches a player who is off the ground.
+		if isvalid(defender.PlayerComponent) == false then
+			return false
+		end
+
+		if attackInfo == "charge" then
+			local rb = defender.RigidbodyComponent
+			if rb == nil or rb:IsOnGround() == false then
+				return false
+			end
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end

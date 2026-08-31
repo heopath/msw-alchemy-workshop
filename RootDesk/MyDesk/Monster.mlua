@@ -20,6 +20,12 @@ script Monster extends Component
 	@Sync
 	property number DestroyDelay = 0.6
 
+	-- Incoming-damage scale. Stays 1 for every existing monster; RockWarrior raises it
+	-- to 3 while staggered so the stagger window is the real damage window.
+	-- Kept here so HP has exactly one owner and two handlers never race on Hp.
+	@Sync
+	property number DamageMultiplier = 1
+
 	property string DamageSkinRUID = "02c22d93421b4038b3c413b3e40b57ec"
 
 	method void OnBeginPlay()
@@ -64,7 +70,7 @@ script Monster extends Component
 	@EventSender("Self")
 	handler HandleHitEvent(HitEvent event)
 		-- Skip re-Dead if already dead when this hit landed (originalHp <= 0).
-		local TotalDamage = event.TotalDamage
+		local TotalDamage = event.TotalDamage * self.DamageMultiplier
 		
 		local originalHp = self.Hp
 		self.Hp = self.Hp - TotalDamage

@@ -1,0 +1,108 @@
+@Component
+script GiantMushroomAttack extends AttackComponent
+
+	-- Declared as number (System.Double) so the .model value binds; CalcDamage floors it.
+	-- An `integer` property here produced LWA-4012 against the stored model value.
+	@MinValue(0)
+	property number ContactDamage = 10
+
+	@MinValue(0)
+	property number StompDamage = 15
+
+	@MinValue(0)
+	property number StompRadius = 2.5
+
+	@MinValue(0)
+	property number ContactInterval = 0.3
+
+	property Vector2 ContactBoxSize = Vector2(1.65, 1.08)
+
+	property Vector2 ContactBoxOffset = Vector2(0, 0.54)
+
+	@HideFromInspector
+	property any ContactShape = nil
+
+	@HideFromInspector
+	property any StompShape = nil
+
+	@HideFromInspector
+	property integer ContactTimerId = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Builds the reusable hit shapes and starts the body-contact damage tick.
+		self.ContactShape = BoxShape(Vector2.zero, self.ContactBoxSize, 0)
+		self.StompShape = CircleShape(Vector2.zero, self.StompRadius)
+
+		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
+			self:ContactTick()
+		end, self.ContactInterval)
+
+		log("GiantMushroomAttack ready: contact=" .. tostring(self.ContactDamage) .. " stomp=" .. tostring(self.StompDamage) .. " radius=" .. tostring(self.StompRadius))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- Releases the contact tick timer.
+		if self.ContactTimerId ~= 0 then
+			_TimerService:ClearTimer(self.ContactTimerId)
+			self.ContactTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ContactTick()
+		-- Body-contact damage. The player's own ImmuneCooldown throttles repeat hits.
+		local monster = self.Entity.Monster
+		if isvalid(monster) and monster.IsDead then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.ContactShape.Size = self.ContactBoxSize
+		self.ContactShape.Angle = 0
+		self.ContactShape.Position = Vector2(worldPosition.x + self.ContactBoxOffset.x, worldPosition.y + self.ContactBoxOffset.y)
+
+		self:AttackFast(self.ContactShape, "contact", CollisionGroups.Player)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void DoStomp()
+		-- Radial slam centred on the boss's feet. Invoked by GiantMushroomAI after the telegraph.
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.StompShape.Radius = self.StompRadius
+		self.StompShape.Position = Vector2(worldPosition.x, worldPosition.y + 0.3)
+
+		self:AttackFast(self.StompShape, "stomp", CollisionGroups.Player)
+		log("GiantMushroom stomp resolved at x=" .. tostring(worldPosition.x) .. " radius=" .. tostring(self.StompRadius))
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- Stomp and body contact carry different damage; parent declares no @ExecSpace (LEA-3014).
+		if attackInfo == "stomp" then
+			return math.floor(self.StompDamage)
+		end
+
+		return math.floor(self.ContactDamage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- Only players take damage from the boss.
+		if isvalid(defender.PlayerComponent) == false then
+			return false
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end

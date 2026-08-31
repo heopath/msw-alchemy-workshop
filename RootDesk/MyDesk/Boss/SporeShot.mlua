@@ -1,0 +1,96 @@
+@Component
+script SporeShot extends AttackComponent
+
+	@MinValue(0)
+	property number Speed = 6.0
+
+	-- number, not integer: an `integer` property produced LWA-4012 against the .model value.
+	@MinValue(0)
+	property number Damage = 8
+
+	@MinValue(0)
+	property number MaxLifetime = 3.0
+
+	@MinValue(0)
+	property number HitBoxSize = 0.7
+
+	@HideFromInspector
+	property boolean Fired = false
+
+	@HideFromInspector
+	property number DirX = 1
+
+	@HideFromInspector
+	property number DirY = 0
+
+	@HideFromInspector
+	property number Lifetime = 0
+
+	@ExecSpace("ServerOnly")
+	method void Fire(number dirX, number dirY)
+		-- Normalises the travel direction and arms the projectile.
+		local length = math.sqrt(dirX * dirX + dirY * dirY)
+		if length <= 0 then
+			self.DirX = 1
+			self.DirY = 0
+		else
+			self.DirX = dirX / length
+			self.DirY = dirY / length
+		end
+
+		self.Lifetime = 0
+		self.Fired = true
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Body-less projectile: Translate every frame, then resolve its own hit box.
+		if self.Fired == false then
+			return
+		end
+
+		self.Lifetime = self.Lifetime + delta
+		if self.Lifetime >= self.MaxLifetime then
+			self.Entity:Destroy()
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		transform:Translate(self.DirX * self.Speed * delta, self.DirY * self.Speed * delta)
+
+		local worldPosition = transform.WorldPosition
+		local hits = self:AttackFrom(Vector2(self.HitBoxSize, self.HitBoxSize), Vector2(worldPosition.x, worldPosition.y), "spore", CollisionGroups.Player)
+		if hits == nil then
+			return
+		end
+
+		local hitCount = 0
+		for _, hit in pairs(hits) do
+			hitCount = hitCount + 1
+		end
+
+		if hitCount > 0 then
+			log("SporeShot hit " .. tostring(hitCount) .. " target(s) for " .. tostring(self.Damage))
+			self.Entity:Destroy()
+		end
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- Flat per-spore damage; parent declares no @ExecSpace (LEA-3014).
+		return math.floor(self.Damage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- Only players are hit by spores.
+		if isvalid(defender.PlayerComponent) == false then
+			return false
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end

@@ -1,0 +1,23 @@
+{
+  "Id": "",
+  "GameId": "",
+  "EntryKey": "directory://b75568c269964d08b7a9f59fb8f453df",
+  "ContentType": "x-mod/directory",
+  "Content": "",
+  "Usage": 0,
+  "UsePublish": 1,
+  "UseService": 0,
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "",
+  "DynamicLoading": 0,
+  "ContentProto": {
+    "Use": "Json",
+    "Json": {
+      "entry_id": "directory://b75568c269964d08b7a9f59fb8f453df",
+      "name": "Region",
+      "lock": false,
+      "folding": false,
+      "nameEditable": true
+    }
+  }
+}
