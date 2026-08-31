@@ -135,13 +135,26 @@ script SporePadComponent extends Component
 		self.OverlapCount = self.OverlapCount + 1
 
 		if self.Consumed then
+			-- 1회용이라 이미 소비된 뒤. 파괴 지연(0.15초) 사이에 또 들어온 경우다.
+			log("SporePad already consumed, ignoring: " .. self.Entity.Name .. " <- " .. other.Name)
+			return
+		end
+
+		-- 무장 게이트는 **발판을 놓은 플레이어**를 위한 것이다. 발밑에 깔린 발판이 놓자마자
+		-- 자기를 소비해버리는 것을 막는 장치다. 몬스터는 발판을 놓지 않으므로 그 문제가 없다.
+		--
+		-- 몬스터에게까지 게이트를 걸면 T6이 성립하지 않는다. 바위 전사 돌진은 5.6유닛/초라
+		-- 발판을 깔고 0.35초 안에 비켜야 무장되는데, 돌진 중에는 사실상 불가능하다.
+		-- 그래서 간헐적으로 통과했다.
+		local isPlayer = isvalid(other.PlayerComponent)
+		if self.Armed == false and isPlayer then
+			-- Log 3 of 6: 놓은 자리에 아직 서 있는 플레이어.
+			log("SporePad ignored enter (not armed yet, player): " .. self.Entity.Name .. " <- " .. other.Name)
 			return
 		end
 
 		if self.Armed == false then
-			-- Log 3 of 6: this is the placer still standing where the pad was dropped.
-			log("SporePad ignored enter (not armed yet): " .. self.Entity.Name .. " <- " .. other.Name)
-			return
+			log("SporePad bouncing non-player before arming (by design): " .. self.Entity.Name .. " <- " .. other.Name)
 		end
 
 		local rb = other.RigidbodyComponent

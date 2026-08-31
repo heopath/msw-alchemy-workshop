@@ -212,7 +212,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 2.5
+          "Value": 4
         },
         {
           "TargetType": "script.RockWarriorAI",
@@ -221,7 +221,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 1.8
+          "Value": 3
         },
         {
           "TargetType": "script.RockWarriorAI",

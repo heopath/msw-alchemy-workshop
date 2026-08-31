@@ -23,6 +23,16 @@ script PortalComponent extends Component
 	@HideFromInspector
 	property number ArmTimer = 0
 
+	-- 잠기면 통과하지 못한다. 보스방의 되돌아가는 포털을 BossRoomLockComponent 가 조작한다.
+	-- 잠긴 동안 스프라이트를 어둡게 해서 "닫혔다"는 것이 눈에 보이게 한다 — 아무 반응 없이
+	-- 안 되면 플레이어는 고장으로 읽는다.
+	@Sync
+	property boolean Locked = false
+
+	property Color LockedColor = Color(0.35, 0.35, 0.45, 0.8)
+
+	property Color OpenColor = Color(1, 1, 1, 1)
+
 	property any triggerHandler = nil
 
 	property any keyHandler = nil
