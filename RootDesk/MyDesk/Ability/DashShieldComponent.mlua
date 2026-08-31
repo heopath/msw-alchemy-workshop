@@ -1,0 +1,230 @@
+@Component
+script DashShieldComponent extends Component
+
+	-- 페리온 능력 «돌진 방패». 바라보는 방향으로 짧게 돌진하며, 그동안 피격이 무효고
+	-- 지나친 적을 밀어낸다. 리스항구 보스의 파도벽을 뚫는 열쇠가 된다.
+	--
+	-- AttackComponent 를 상속하지 **않는다.** DefaultPlayer 에는 이미 PlayerAttack 과
+	-- DiveSlamAttack 두 개가 붙어 LWA-4013 경고가 있고, 세 번째를 더하면 그 판단을 다시
+	-- 봐야 한다. 넉백은 피해가 아니므로 공격 판정 없이 AddForce 로 충분하다.
+	--
+	-- 수치는 AbilityTable 의 Perion 행에서 읽는다. 여기 있는 값은 표가 없을 때의 대비다.
+	property string RequiredAbility = "DashShield"
+
+	@MinValue(0)
+	property number DashDistance = 3.0
+
+	@MinValue(0)
+	property number DashDuration = 0.3
+
+	@MinValue(0)
+	property number DashCooldown = 4.0
+
+	-- SetForce 는 속도가 아니라 힘이라 거리와 1:1로 대응하지 않는다. 그래서 힘과 별개로
+	-- 이동 거리를 직접 재서 DashDistance 에 닿으면 멈춘다.
+	@MinValue(0)
+	property number DashForce = 14.0
+
+	@MinValue(0)
+	property number KnockbackForceX = 5.0
+
+	@MinValue(0)
+	property number KnockbackForceY = 3.0
+
+	@MinValue(0)
+	property number KnockbackRange = 1.2
+
+	@HideFromInspector
+	property boolean Dashing = false
+
+	@HideFromInspector
+	property number DashTimer = 0
+
+	@HideFromInspector
+	property number DashStartX = 0
+
+	@HideFromInspector
+	property number DashDirection = 1
+
+	@HideFromInspector
+	property number ReadyAt = 0
+
+	property any keyHandler = nil
+
+	method void OnBeginPlay()
+		-- 입력은 클라이언트, 판정은 서버. 포털·내려찍기와 같은 형태다.
+		if self:IsClient() then
+			self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		end
+
+		if self:IsServer() then
+			self.Dashing = false
+			self.ReadyAt = 0
+			self:LoadTuning()
+		end
+	end
+
+	method void OnEndPlay()
+		-- 입력 구독 해제.
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void LoadTuning()
+		-- 표에서 당겨온다. 밀어넣는 방식이면 나중에 접속한 플레이어가 설정을 못 받는다.
+		local row = _AbilityLogic:FindAbilityRow(self.RequiredAbility)
+		if row == nil then
+			log_warning("DashShield: AbilityTable 에 '" .. self.RequiredAbility .. "' 행이 없어 스크립트 기본값을 씁니다")
+			return
+		end
+
+		self.DashDistance = _AbilityLogic:ReadNumber(row, "dashDistance", self.DashDistance)
+		self.DashDuration = _AbilityLogic:ReadNumber(row, "dashDuration", self.DashDuration)
+		self.DashCooldown = _AbilityLogic:ReadNumber(row, "cooldown", self.DashCooldown)
+		self.DashForce = _AbilityLogic:ReadNumber(row, "dashForce", self.DashForce)
+		self.KnockbackForceX = _AbilityLogic:ReadNumber(row, "dashKnockbackX", self.KnockbackForceX)
+		self.KnockbackForceY = _AbilityLogic:ReadNumber(row, "dashKnockbackY", self.KnockbackForceY)
+		self.KnockbackRange = _AbilityLogic:ReadNumber(row, "dashKnockbackRange", self.KnockbackRange)
+
+		log("DashShield tuning: distance=" .. tostring(self.DashDistance)
+			.. " duration=" .. tostring(self.DashDuration)
+			.. " cooldown=" .. tostring(self.DashCooldown)
+			.. " force=" .. tostring(self.DashForce))
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- Q. F(설치)·M(지역 선택)·아래 방향키(내려찍기)·F9·F10 과 겹치지 않는다.
+		if event.key ~= KeyboardKey.Q then
+			return
+		end
+
+		if self.Entity ~= _UserService.LocalPlayer then
+			return
+		end
+
+		self:RequestDash()
+	end
+
+	@ExecSpace("Server")
+	method void RequestDash()
+		-- 능력 보유와 쿨다운은 서버가 판단한다.
+		if self.Dashing then
+			return
+		end
+
+		if _AbilityLogic:HasAbility(self.RequiredAbility) == false then
+			log("DashShield refused: ability '" .. self.RequiredAbility .. "' not owned")
+			return
+		end
+
+		local now = _UtilLogic.ElapsedSeconds
+		if now < self.ReadyAt then
+			log("DashShield refused: on cooldown for " .. tostring(self.ReadyAt - now) .. "s")
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		-- 바라보는 방향. Scale.x 가 아니라 LookDirectionX 를 쓴다 (msw-combat-system §9-1).
+		local controller = self.Entity.PlayerControllerComponent
+		local direction = 1
+		if isvalid(controller) and controller.LookDirectionX < 0 then
+			direction = -1
+		end
+
+		self.Dashing = true
+		self.DashTimer = self.DashDuration
+		self.DashStartX = transform.WorldPosition.x
+		self.DashDirection = direction
+		self.ReadyAt = now + self.DashCooldown
+
+		self:SetInvulnerable(self.DashDuration)
+
+		log("DashShield started: direction=" .. tostring(direction)
+			.. " from x=" .. tostring(self.DashStartX)
+			.. " (거리 " .. tostring(self.DashDistance) .. ", " .. tostring(self.DashDuration) .. "초, 무적)")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetInvulnerable(number duration)
+		-- PlayerHit 의 기존 무적 구조를 재사용한다. 새 판정을 만들지 않는다.
+		local hit = self.Entity.PlayerHit
+		if not isvalid(hit) then
+			log_warning("DashShield: PlayerHit 를 찾지 못해 무적을 걸지 못했습니다")
+			return
+		end
+
+		hit.InvulnUntil = _UtilLogic.ElapsedSeconds + duration
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- 이동은 매 프레임 힘을 주고, 거리와 시간 둘 중 먼저 닿는 쪽에서 끝난다.
+		if self.Dashing == false then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		local rb = self.Entity.RigidbodyComponent
+		if not isvalid(transform) or rb == nil then
+			self.Dashing = false
+			return
+		end
+
+		local travelled = math.abs(transform.WorldPosition.x - self.DashStartX)
+		self.DashTimer = self.DashTimer - delta
+
+		if travelled >= self.DashDistance or self.DashTimer <= 0 then
+			self.Dashing = false
+			log("DashShield ended: travelled=" .. tostring(travelled))
+			return
+		end
+
+		rb:SetForce(Vector2(self.DashDirection * self.DashForce, 0))
+		self:PushMonstersAside()
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PushMonstersAside()
+		-- 지나친 몬스터를 밀어낸다. 피해가 아니므로 공격 판정을 쓰지 않는다 —
+		-- 세 번째 AttackComponent 를 만들지 않으려는 것이기도 하다 (LWA-4013).
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return
+		end
+
+		local monsters = map:GetChildComponentsByTypeName("script.Monster", false)
+		if monsters == nil then
+			return
+		end
+
+		local myPosition = self.Entity.TransformComponent.WorldPosition
+
+		for _, monster in pairs(monsters) do
+			if isvalid(monster) and monster.IsDead == false then
+				local other = monster.Entity
+				if isvalid(other) then
+					local otherPosition = other.TransformComponent.WorldPosition
+					local dx = otherPosition.x - myPosition.x
+					local dy = otherPosition.y - myPosition.y
+
+					if math.abs(dx) <= self.KnockbackRange and math.abs(dy) <= self.KnockbackRange then
+						local otherBody = other.RigidbodyComponent
+						if otherBody ~= nil then
+							local pushDirection = self.DashDirection
+							otherBody:AddForce(Vector2(pushDirection * self.KnockbackForceX, self.KnockbackForceY))
+						end
+					end
+				end
+			end
+		end
+	end
+
+end

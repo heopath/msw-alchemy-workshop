@@ -324,6 +324,36 @@ x  -19.5  -17  -14  -11   -8    -5    -2     1     4     7    10    13   (5유�
 
 **페리온은 건드리지 않았습니다** (여전히 16.96). 헤네시스가 괜찮으면 같은 방법으로 넓힙니다.
 
+## T19 — 페리온 능력: 돌진 방패 (2026-08-31)
+
+**발동 키는 Q입니다.** 바위 전사를 잡아야 쓸 수 있습니다 (F9로도 받을 수 있습니다).
+
+- [ ] **능력이 없으면 발동하지 않는다**
+  조작: 페리온 보스를 잡기 전에 Q
+  기대: 아무 일도 없고 `DashShield refused: ability 'DashShield' not owned`
+  실패하면: `AbilityTable.csv`의 `DashShield` 행, `regionId=Perion`
+- [ ] **바위 전사를 잡으면 얻는다**
+  기대: `AbilityLogic granted ability 'DashShield' for clearing region 'Perion'`
+  참고: 이전까지 나던 `no AbilityTable row for regionId=Perion` 경고가 **이제 안 나야** 맞습니다
+- [ ] **Q로 바라보는 방향으로 3유닛 돌진한다**
+  조작: 좌우를 보고 각각 Q
+  기대: 짧게 미끄러지듯 나아간다. 콘솔 `DashShield started: direction=...` → `ended: travelled=...`
+  **`travelled`가 3.0 근처여야** 합니다. 크게 벗어나면 `dashForce`(14)를 조정합니다
+  실패하면: `Ability/DashShieldComponent.mlua`. Q가 다른 조작과 겹치면 X나 LeftShift로 바꿉니다
+- [ ] **돌진 중에는 맞지 않는다** ← 리스항구 보스의 열쇠가 될 부분
+  조작: 잡몹이나 보스에게 붙어서 Q
+  기대: 돌진하는 0.3초 동안 피해를 안 입는다
+  실패하면: `PlayerHit.mlua`의 `InvulnUntil`, `DashShieldComponent.SetInvulnerable`
+- [ ] **지나친 적이 밀려난다**
+  조작: 잡몹을 향해 Q
+  기대: 잡몹이 진행 방향으로 밀려나며 살짝 뜬다
+  실패하면: `PushMonstersAside`의 범위(1.2)와 힘(5.0 / 3.0)
+- [ ] **쿨다운 4초가 걸린다**
+  조작: Q를 연타한다
+  기대: `DashShield refused: on cooldown for ...`
+- [ ] **평타·내려찍기가 여전히 동작한다** (회귀 확인)
+  참고: 플레이어에 스크립트가 하나 더 붙었습니다. 기존 둘이 멀쩡한지 같이 봐주세요
+
 ## T17 — 발판을 보스가 통과하던 문제 (2026-08-31)
 
 돌진 경로에 급히 깔면 무장(0.35초) 전에 보스가 지나가 무시됐습니다. **몬스터는 무장 여부와 무관하게

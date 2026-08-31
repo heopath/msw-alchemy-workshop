@@ -7,14 +7,25 @@ script PlayerHit extends HitComponent
 	@HideFromInspector
 	property number LastHitTime = 0
 
+	-- 이 시각까지는 무조건 무효. 돌진 방패(DashShieldComponent)가 대시 동안 세운다.
+	-- 기존 ImmuneCooldown 구조를 그대로 두고 앞에 조건 하나만 얹은 것이다 —
+	-- 검증된 피격 판정을 건드리지 않기 위해서다.
+	@HideFromInspector
+	property number InvulnUntil = 0
+
 	method boolean IsHitTarget(string attackInfo)
 		-- Enforce ImmuneCooldown between successful hits.
 		local currentTime = _UtilLogic.ElapsedSeconds
+
+		if currentTime < self.InvulnUntil then
+			return false
+		end
+
 		if self.LastHitTime + self.ImmuneCooldown < currentTime then
 			self.LastHitTime = _UtilLogic.ElapsedSeconds
 			return true
 		end
-		
+
 		return false
 	end
 

@@ -20,7 +20,8 @@
       "Components": [
         "script.PlayerAttack",
         "script.PlayerHit",
-        "script.DiveSlamAttack"
+        "script.DiveSlamAttack",
+        "script.DashShieldComponent"
       ],
       "Properties": [],
       "Values": [
