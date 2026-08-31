@@ -7,8 +7,21 @@ script FieldMonsterAttack extends AttackComponent
 	@MinValue(0)
 	property number ContactDamage = 5
 
+	-- 0.03s matches script.MonsterAttack, the contact-damage implementation already proven in
+	-- this project. At the previous 0.3s the player travelled 1.4 * 0.3 = 0.42 units between
+	-- samples — wider than the snail's 0.40 hit box, so small mobs were stepped straight through.
 	@MinValue(0)
-	property number ContactInterval = 0.3
+	property number ContactInterval = 0.03
+
+	-- Diagnostics: one summary line per this many seconds, so the log stays readable at 33Hz.
+	@MinValue(0)
+	property number LogInterval = 1.0
+
+	@HideFromInspector
+	property integer TickCount = 0
+
+	@HideFromInspector
+	property number LogTimer = 0
 
 	property Vector2 ContactBoxSize = Vector2(0.6, 0.5)
 
@@ -28,6 +41,12 @@ script FieldMonsterAttack extends AttackComponent
 		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
 			self:ContactTick()
 		end, self.ContactInterval)
+
+		-- Log 1 of 4: proves the timer was actually armed on this entity.
+		log("FieldMonsterAttack ready on " .. self.Entity.Name
+			.. ", damage=" .. tostring(math.floor(self.ContactDamage))
+			.. ", box=(" .. tostring(self.ContactBoxSize.x) .. ", " .. tostring(self.ContactBoxSize.y) .. ")"
+			.. ", interval=" .. tostring(self.ContactInterval))
 	end
 
 	@ExecSpace("ServerOnly")
@@ -57,7 +76,33 @@ script FieldMonsterAttack extends AttackComponent
 		self.ContactShape.Angle = 0
 		self.ContactShape.Position = Vector2(worldPosition.x + self.ContactBoxOffset.x, worldPosition.y + self.ContactBoxOffset.y)
 
-		self:AttackFast(self.ContactShape, "contact", CollisionGroups.Player)
+		-- Attack (not AttackFast) so the resolved target list can be counted. AttackFast returns
+		-- nothing, which makes "ran but found nobody" indistinguishable from "never ran".
+		local hits = self:Attack(self.ContactShape, "contact", CollisionGroups.Player)
+
+		local hitCount = 0
+		if hits ~= nil then
+			for _, hit in pairs(hits) do
+				hitCount = hitCount + 1
+			end
+		end
+
+		self.TickCount = self.TickCount + 1
+
+		if hitCount > 0 then
+			-- Log 3 of 4: the box actually resolved onto somebody.
+			log(self.Entity.Name .. " contact HIT " .. tostring(hitCount) .. " target(s) for " .. tostring(math.floor(self.ContactDamage)))
+			return
+		end
+
+		self.LogTimer = self.LogTimer + self.ContactInterval
+		if self.LogTimer >= self.LogInterval then
+			self.LogTimer = 0
+			-- Log 2 of 4: the timer is running but the box is not reaching anyone.
+			log(self.Entity.Name .. " contact tick #" .. tostring(self.TickCount)
+				.. " at x=" .. tostring(worldPosition.x) .. " y=" .. tostring(worldPosition.y)
+				.. ", candidates=0")
+		end
 	end
 
 	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
@@ -68,6 +113,8 @@ script FieldMonsterAttack extends AttackComponent
 	method boolean IsAttackTarget(Entity defender, string attackInfo)
 		-- Only players take contact damage.
 		if isvalid(defender.PlayerComponent) == false then
+			-- Log 4 of 4: something was in the box but got filtered out here.
+			log(self.Entity.Name .. " contact rejected non-player: " .. defender.Name)
 			return false
 		end
 

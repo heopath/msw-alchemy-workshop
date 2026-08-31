@@ -1,2 +1,2 @@
-﻿abilityId,displayName,regionId,modelId,bounceForce,duration,maxCount,cooldown,groundOnly
-SporePad,포자 발판,Henesys,sporepad,6.0,20,2,3,1
+abilityId,displayName,regionId,modelId,bounceForce,duration,maxCount,cooldown,groundOnly,singleUse,airBounceMultiplier,maxBounceForce
+SporePad,포자 발판,Henesys,sporepad,6.0,20,2,3,1,1,1.5,9.0

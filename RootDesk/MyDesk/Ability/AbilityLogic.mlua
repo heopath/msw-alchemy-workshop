@@ -238,8 +238,12 @@ script AbilityLogic extends Logic
 		
 		local padComponent = pad.SporePadComponent
 		if isvalid(padComponent) then
+			-- Every tunable comes from the AbilityTable row, never from a literal here.
 			padComponent.BounceForce = self:ReadNumber(row, "bounceForce", 6)
 			padComponent.Duration = self:ReadNumber(row, "duration", 20)
+			padComponent.SingleUse = self:ReadNumber(row, "singleUse", 1) >= 1
+			padComponent.AirBounceMultiplier = self:ReadNumber(row, "airBounceMultiplier", 1.5)
+			padComponent.MaxBounceForce = self:ReadNumber(row, "maxBounceForce", 9)
 		end
 		
 		table.insert(self._T.pads[player.Name], pad)

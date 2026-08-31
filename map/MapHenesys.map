@@ -13574,7 +13574,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
                 "y": 0.14
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -13728,7 +13729,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
                 "y": 0.14
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -13882,7 +13884,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
                 "y": 0.14
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -14036,7 +14039,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
                 "y": 0.14
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -14190,7 +14194,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.29
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -14344,7 +14349,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.26
-              }
+              },
+              "ContactInterval": 0.03
             },
             {
               "@type": "script.FieldMonsterHop",
@@ -14502,7 +14508,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.29
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -14656,7 +14663,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.26
-              }
+              },
+              "ContactInterval": 0.03
             },
             {
               "@type": "script.FieldMonsterHop",
@@ -14814,7 +14822,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.29
-              }
+              },
+              "ContactInterval": 0.03
             }
           ],
           "@version": 1,
@@ -14968,7 +14977,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.26
-              }
+              },
+              "ContactInterval": 0.03
             },
             {
               "@type": "script.FieldMonsterHop",
@@ -15126,7 +15136,8 @@
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
                 "y": 0.26
-              }
+              },
+              "ContactInterval": 0.03
             },
             {
               "@type": "script.FieldMonsterHop",

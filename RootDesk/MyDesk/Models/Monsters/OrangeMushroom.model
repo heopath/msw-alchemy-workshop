@@ -210,6 +210,15 @@
             "x": 0.05,
             "y": 0.29
           }
+        },
+        {
+          "TargetType": "script.FieldMonsterAttack",
+          "Name": "ContactInterval",
+          "ValueType": {
+            "$type": "MODNativeType",
+            "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          },
+          "Value": 0.03
         }
       ],
       "EventLinks": [],

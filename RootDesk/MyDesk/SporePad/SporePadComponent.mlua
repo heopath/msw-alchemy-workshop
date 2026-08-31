@@ -5,7 +5,18 @@ script SporePadComponent extends Component
 	-- UserDataSet via _AbilityLogic, which overwrites these on spawn.
 	property number BounceForce = 6.0
 
+	-- 안 밟았을 때 사라지는 시간. 밟으면 SingleUse 쪽이 먼저 없앤다.
 	property number Duration = 20
+
+	-- 한 번 튕기면 소멸. 위에 서서 무한 점프하는 것을 막는다.
+	property boolean SingleUse = true
+
+	-- 공중에서 밟으면 BounceForce에 이 배율을 곱한다 (점프와 겹쳤을 때 더 높이).
+	-- 지면에서 밟으면 배율 없이 BounceForce 그대로.
+	property number AirBounceMultiplier = 1.5
+
+	-- 배율을 적용해도 이 값을 넘지 않는다. 없으면 맵 밖으로 날아간다.
+	property number MaxBounceForce = 9.0
 
 	property any triggerHandler = nil
 
@@ -62,23 +73,41 @@ script SporePadComponent extends Component
 			return
 		end
 
+		-- Airborne = the target jumped onto the pad, so the bounce stacks with that jump.
+		-- IsOnGround is the readable-on-server way to tell those apart. Reading the actual
+		-- vertical velocity is not an option here: RigidbodyComponent.RealMoveVelocity is
+		-- documented as valid on the Client for LocalPlayer, and this handler is ServerOnly.
+		local force = self.BounceForce
+		local grounded = rb:IsOnGround()
+		if grounded == false then
+			force = self.BounceForce * self.AirBounceMultiplier
+			if force > self.MaxBounceForce then
+				force = self.MaxBounceForce
+			end
+		end
+
 		-- MoveVelocity is the walking velocity the movement logic rewrites every frame, so it is
 		-- cleared first and never used to carry the bounce itself.
 		rb.MoveVelocity = Vector2.zero
 
 		-- MapleTile bodies expose JustJump for a forced vertical jump. It reports whether the jump
 		-- was accepted, so fall back to a raw upward force when it is refused (e.g. mid-air).
-		local jumped = rb:JustJump(Vector2(0, self.BounceForce))
+		local jumped = rb:JustJump(Vector2(0, force))
 		if jumped == false then
-			rb:SetForce(Vector2(0, self.BounceForce))
+			rb:SetForce(Vector2(0, force))
 		end
 
 		-- Tells the bounced entity it was launched by a spore pad. RockWarrior listens for this.
 		local bounce = SporePadBounceEvent()
-		bounce.BounceForce = self.BounceForce
+		bounce.BounceForce = force
 		other:SendEvent(bounce)
 
-		log("SporePad bounced entity: " .. other.Name .. " with force " .. tostring(self.BounceForce) .. ", JustJump=" .. tostring(jumped))
+		log("SporePad bounced " .. other.Name .. " with force " .. tostring(force) .. " (grounded=" .. tostring(grounded) .. ", JustJump=" .. tostring(jumped) .. ")")
+
+		if self.SingleUse then
+			log("SporePad consumed: " .. self.Entity.Name)
+			self.Entity:Destroy()
+		end
 	end
 
 end
