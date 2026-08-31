@@ -295,15 +295,38 @@ x  -19.5  -17  -14  -11   -8    -5    -2     1     4     7    10    13   (5유�
 
 ### 포자 발판
 
-- [ ] **한 번 튕기면 발판이 사라진다**
-  조작: 발판을 설치하고 위에 올라선다
-  기대: 한 번 튕기고 발판이 사라진다. 제자리 무한 점프가 되지 않는다
-  콘솔: `SporePad bounced ... (grounded=true...)` → `SporePad consumed: SporePad_N`
-  실패하면: `SporePad/SporePadComponent.mlua`의 `SingleUse`, `AbilityTable.csv`의 `singleUse` 열
+> ⚠️ **조작 순서가 바뀌었습니다.** 발판은 **발밑에 깔리므로 처음에는 무장되지 않습니다.**
+> 놓자마자 자기 자신을 소비해버리는 것을 막기 위한 것입니다.
+>
+> **놓는다 → 비켜선다 → 다시 밟는다.** 이 순서여야 튕깁니다.
+> 놓고 그 자리에 계속 서 있으면 아무 일도 일어나지 않는 것이 **정상**입니다.
+>
+> T6(보스 돌진 경로에 깔고 비키기)은 이 흐름과 그대로 맞물립니다.
+
+- [ ] **놓고 비켜서면 무장된다**
+  조작: F로 발판을 놓고 옆으로 한 걸음 비킨다
+  기대: 콘솔에 `SporePad placed: ... (armed=false)` → `SporePad ignored enter (not armed yet)` → 비킨 뒤 `SporePad armed: SporePad_N`
+  실패하면: `SporePadComponent`의 `ArmDelay` / `OverlapCount`, `TriggerLeaveEvent` 구독
+- [ ] **다시 밟으면 한 번 튕기고 사라진다**
+  조작: 무장된 발판을 다시 밟는다
+  기대: 튕겨 오르고 발판이 사라진다. 제자리 무한 점프가 되지 않는다
+  콘솔: `SporePad bounce: ... force=6.0` → `SporePad JustJump returned true` → `SporePad trigger disabled, destroy in 0.15s`
+  실패하면: 아래 표로 어디서 끊겼는지 갈립니다
 - [ ] **안 밟으면 20초 뒤에 사라진다** (기존 동작 유지)
   조작: 설치하고 밟지 않은 채 20초 기다린다
   기대: `SporePad expired`
   실패하면: `SporePadComponent.Expire`
+**튕기지 않을 때 — 로그 6종으로 어디서 끊겼는지 갈립니다**
+
+| 마지막으로 보이는 줄 | 어디서 끊긴 것인가 | 볼 곳 |
+|---|---|---|
+| `placed:` 만 있고 그 뒤가 없음 | 트리거 자체가 안 옴 | `SporePad.model`의 TriggerComponent, 충돌 그룹 |
+| `ignored enter (not armed yet)` 만 반복 | 무장이 안 됨 — 계속 밟고 서 있는 상태 | **비켜섰는지 확인.** 안 비켰으면 정상 동작입니다 |
+| `armed:` 는 나오는데 다시 밟아도 `bounce:` 가 없음 | 무장 후 재진입 트리거가 안 옴 | `TriggerEnterEvent` 재발동, `OverlapCount` 계산 |
+| `bounce:` 는 나오는데 안 뜸 | 힘은 계산됐는데 물리에 안 실림 | 바로 아래 `JustJump returned` 값을 봅니다 |
+| `JustJump returned false` | JustJump가 거부되어 `SetForce`로 폴백 | MapleTile 물리, 공중 상태 |
+| `trigger disabled, destroy in 0.15s` 까지 다 나오는데 안 뜸 | 파괴 지연으로도 안 되는 것 — 다른 원인 | 지연을 늘리거나 `Destroy` 자체를 빼고 재확인 |
+
 - [ ] **점프 중에 밟으면 더 높이 뜬다**
   조작: 그냥 걸어가서 밟아보고, 다음엔 점프해서 밟아본다
   기대: 점프해서 밟은 쪽이 눈에 띄게 높이 뜬다

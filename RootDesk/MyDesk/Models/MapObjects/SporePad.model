@@ -187,6 +187,15 @@
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
           "Value": 9
+        },
+        {
+          "TargetType": "script.SporePadComponent",
+          "Name": "ArmDelay",
+          "ValueType": {
+            "$type": "MODNativeType",
+            "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+          },
+          "Value": 0.35
         }
       ],
       "EventLinks": [],

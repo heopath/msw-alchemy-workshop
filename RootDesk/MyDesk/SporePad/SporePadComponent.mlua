@@ -18,15 +18,42 @@ script SporePadComponent extends Component
 	-- 배율을 적용해도 이 값을 넘지 않는다. 없으면 맵 밖으로 날아간다.
 	property number MaxBounceForce = 9.0
 
+	-- The pad spawns at the placer's own feet, so it starts out overlapping them. Without a gate
+	-- the very first trigger would consume a SingleUse pad the instant it is placed, and the
+	-- player would never get to step on it. The pad only arms once ArmDelay has elapsed AND
+	-- nobody is standing in it — i.e. after the placer steps aside.
+	@MinValue(0)
+	property number ArmDelay = 0.35
+
+	@HideFromInspector
+	property boolean Armed = false
+
+	@HideFromInspector
+	property number ArmTimer = 0
+
+	@HideFromInspector
+	property integer OverlapCount = 0
+
+	@HideFromInspector
+	property boolean Consumed = false
+
 	property any triggerHandler = nil
+
+	property any leaveHandler = nil
 
 	@HideFromInspector
 	property integer expireTimerId = 0
 
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
-		-- Subscribes to the sibling TriggerComponent's enter event and arms the despawn timer.
+		-- Subscribes to both trigger edges and arms the despawn timer.
+		self.Armed = false
+		self.ArmTimer = self.ArmDelay
+		self.OverlapCount = 0
+		self.Consumed = false
+
 		self.triggerHandler = self.Entity:ConnectEvent(TriggerEnterEvent, self.OnTriggerEnter)
+		self.leaveHandler = self.Entity:ConnectEvent(TriggerLeaveEvent, self.OnTriggerLeave)
 
 		if self.Duration > 0 then
 			self.expireTimerId = _TimerService:SetTimerOnce(function()
@@ -34,20 +61,57 @@ script SporePadComponent extends Component
 			end, self.Duration)
 		end
 
-		log("SporePad placed: " .. self.Entity.Name .. ", force=" .. tostring(self.BounceForce) .. ", duration=" .. tostring(self.Duration))
+		-- Log 1 of 6
+		log("SporePad placed: " .. self.Entity.Name .. " force=" .. tostring(self.BounceForce)
+			.. " duration=" .. tostring(self.Duration) .. " singleUse=" .. tostring(self.SingleUse)
+			.. " armDelay=" .. tostring(self.ArmDelay) .. " (armed=false)")
 	end
 
 	@ExecSpace("ServerOnly")
 	method void OnEndPlay()
-		-- Releases the trigger subscription and the despawn timer.
+		-- Releases both trigger subscriptions and the despawn timer.
 		if self.triggerHandler then
 			self.Entity:DisconnectEvent(TriggerEnterEvent, self.triggerHandler)
 			self.triggerHandler = nil
 		end
 
+		if self.leaveHandler then
+			self.Entity:DisconnectEvent(TriggerLeaveEvent, self.leaveHandler)
+			self.leaveHandler = nil
+		end
+
 		if self.expireTimerId ~= 0 then
 			_TimerService:ClearTimer(self.expireTimerId)
 			self.expireTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Counts down the arm delay, then arms as soon as the pad is empty.
+		if self.Armed then
+			return
+		end
+
+		if self.ArmTimer > 0 then
+			self.ArmTimer = self.ArmTimer - delta
+			return
+		end
+
+		if self.OverlapCount > 0 then
+			return
+		end
+
+		self.Armed = true
+		-- Log 2 of 6: from here on, stepping in bounces.
+		log("SporePad armed: " .. self.Entity.Name)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnTriggerLeave(TriggerLeaveEvent event)
+		-- Stepping out of a not-yet-armed pad is what lets it arm.
+		if self.OverlapCount > 0 then
+			self.OverlapCount = self.OverlapCount - 1
 		end
 	end
 
@@ -65,6 +129,18 @@ script SporePadComponent extends Component
 		-- Player and monster are treated the same; the weakness link in T6 relies on this.
 		local other = event.TriggerBodyEntity
 		if isvalid(other) == false then
+			return
+		end
+
+		self.OverlapCount = self.OverlapCount + 1
+
+		if self.Consumed then
+			return
+		end
+
+		if self.Armed == false then
+			-- Log 3 of 6: this is the placer still standing where the pad was dropped.
+			log("SporePad ignored enter (not armed yet): " .. self.Entity.Name .. " <- " .. other.Name)
 			return
 		end
 
@@ -86,6 +162,10 @@ script SporePadComponent extends Component
 			end
 		end
 
+		-- Log 4 of 6: the bounce is about to be applied, with the force actually chosen.
+		log("SporePad bounce: " .. self.Entity.Name .. " target=" .. other.Name
+			.. " grounded=" .. tostring(grounded) .. " force=" .. tostring(force))
+
 		-- MoveVelocity is the walking velocity the movement logic rewrites every frame, so it is
 		-- cleared first and never used to carry the bounce itself.
 		rb.MoveVelocity = Vector2.zero
@@ -97,17 +177,30 @@ script SporePadComponent extends Component
 			rb:SetForce(Vector2(0, force))
 		end
 
+		-- Log 5 of 6: distinguishes "JustJump took it" from "JustJump refused, SetForce fallback".
+		log("SporePad JustJump returned " .. tostring(jumped) .. " for " .. other.Name)
+
 		-- Tells the bounced entity it was launched by a spore pad. RockWarrior listens for this.
 		local bounce = SporePadBounceEvent()
 		bounce.BounceForce = force
 		other:SendEvent(bounce)
 
-		log("SporePad bounced " .. other.Name .. " with force " .. tostring(force) .. " (grounded=" .. tostring(grounded) .. ", JustJump=" .. tostring(jumped) .. ")")
-
-		if self.SingleUse then
-			log("SporePad consumed: " .. self.Entity.Name)
-			self.Entity:Destroy()
+		if self.SingleUse == false then
+			return
 		end
+
+		-- Stop any further bounce immediately, but let the physics settle before the entity goes
+		-- away. Destroying in the same frame as JustJump risks cancelling the impulse.
+		self.Consumed = true
+
+		local trigger = self.Entity.TriggerComponent
+		if isvalid(trigger) then
+			trigger.Enable = false
+		end
+
+		-- Log 6 of 6
+		log("SporePad trigger disabled, destroy in 0.15s: " .. self.Entity.Name)
+		self.Entity:Destroy(0.15)
 	end
 
 end
