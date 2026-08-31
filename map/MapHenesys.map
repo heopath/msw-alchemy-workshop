@@ -13568,12 +13568,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.4,
-                "y": 0.28
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
-                "y": 0.14
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -13723,12 +13723,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.4,
-                "y": 0.28
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
-                "y": 0.14
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -13878,12 +13878,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.4,
-                "y": 0.28
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
-                "y": 0.14
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -14033,12 +14033,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.4,
-                "y": 0.28
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.02,
-                "y": 0.14
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -14188,12 +14188,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.64,
-                "y": 0.58
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.29
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -14343,12 +14343,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.65,
-                "y": 0.52
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.26
+                "y": 0.71
               },
               "ContactInterval": 0.03
             },
@@ -14502,12 +14502,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.64,
-                "y": 0.58
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.29
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -14657,12 +14657,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.65,
-                "y": 0.52
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.26
+                "y": 0.71
               },
               "ContactInterval": 0.03
             },
@@ -14816,12 +14816,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.64,
-                "y": 0.58
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.29
+                "y": 0.71
               },
               "ContactInterval": 0.03
             }
@@ -14971,12 +14971,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.65,
-                "y": 0.52
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.26
+                "y": 0.71
               },
               "ContactInterval": 0.03
             },
@@ -15130,12 +15130,12 @@
               "ContactBoxSize": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.65,
-                "y": 0.52
+                "y": 1.42
               },
               "ContactBoxOffset": {
                 "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 0.05,
-                "y": 0.26
+                "y": 0.71
               },
               "ContactInterval": 0.03
             },

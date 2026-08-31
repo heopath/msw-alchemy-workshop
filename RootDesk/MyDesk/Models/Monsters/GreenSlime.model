@@ -196,7 +196,7 @@
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
             "x": 0.65,
-            "y": 0.52
+            "y": 1.42
           }
         },
         {
@@ -209,7 +209,7 @@
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
             "x": 0.05,
-            "y": 0.26
+            "y": 0.71
           }
         },
         {
