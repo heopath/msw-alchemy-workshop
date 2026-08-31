@@ -1,0 +1,120 @@
+@Component
+script TideSpiritAttack extends AttackComponent
+
+	-- 거대 버섯의 공격 컴포넌트와 같은 형태다. 접촉 피해 + 예고 뒤 범위 공격 하나.
+	-- number(System.Double) 로 선언하고 CalcDamage 에서 floor 한다 —
+	-- integer 로 두면 모델 값과 LWA-4012 가 난다.
+	@MinValue(0)
+	property number ContactDamage = 26
+
+	@MinValue(0)
+	property number ColumnDamage = 32
+
+	@MinValue(0)
+	property number ColumnRadius = 2.8
+
+	@MinValue(0)
+	property number ContactInterval = 0.03
+
+	property Vector2 ContactBoxSize = Vector2(1.24, 1.42)
+
+	property Vector2 ContactBoxOffset = Vector2(0.06, 0.71)
+
+	@HideFromInspector
+	property any ContactShape = nil
+
+	@HideFromInspector
+	property any ColumnShape = nil
+
+	@HideFromInspector
+	property integer ContactTimerId = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- 재사용할 판정 도형을 만들어두고 접촉 피해 틱을 시작한다.
+		self.ContactShape = BoxShape(Vector2.zero, self.ContactBoxSize, 0)
+		self.ColumnShape = CircleShape(Vector2.zero, self.ColumnRadius)
+
+		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
+			self:ContactTick()
+		end, self.ContactInterval)
+
+		log("TideSpiritAttack ready: contact=" .. tostring(self.ContactDamage) .. " column=" .. tostring(self.ColumnDamage) .. " radius=" .. tostring(self.ColumnRadius))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- 접촉 틱 타이머 해제.
+		if self.ContactTimerId ~= 0 then
+			_TimerService:ClearTimer(self.ContactTimerId)
+			self.ContactTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ContactTick()
+		-- 몸에 닿는 피해. 반복은 플레이어의 ImmuneCooldown 이 막는다.
+		local monster = self.Entity.Monster
+		if isvalid(monster) and monster.IsDead then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.ContactShape.Size = self.ContactBoxSize
+		self.ContactShape.Angle = 0
+		self.ContactShape.Position = Vector2(worldPosition.x + self.ContactBoxOffset.x, worldPosition.y + self.ContactBoxOffset.y)
+
+		self:AttackFast(self.ContactShape, "contact", CollisionGroups.Player)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void DoColumn()
+		-- 발밑에서 솟는 물기둥. 예고가 끝난 뒤 TideSpiritAI 가 부른다.
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.ColumnShape.Radius = self.ColumnRadius
+		self.ColumnShape.Position = Vector2(worldPosition.x, worldPosition.y + 0.3)
+
+		self:AttackFast(self.ColumnShape, "column", CollisionGroups.Player)
+		log("TideSpirit water column resolved at x=" .. tostring(worldPosition.x) .. " radius=" .. tostring(self.ColumnRadius))
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- 물기둥과 접촉은 피해가 다르다. 부모가 @ExecSpace 를 안 달았으므로 여기도 안 단다 (LEA-3014).
+		if attackInfo == "column" then
+			return math.floor(self.ColumnDamage)
+		end
+
+		return math.floor(self.ContactDamage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- 보스 공격은 플레이어에게만.
+		if isvalid(defender.PlayerComponent) == false then
+			return false
+		end
+
+		-- 물기둥은 바닥에서 솟는 것이라 공중에 뜬 플레이어는 지나간다.
+		-- 바위 전사 돌진, 거대 버섯 내려찍기와 같은 규칙이다 — 뜨는 것이 실제 회피가 되어야
+		-- 포자 발판이 이동뿐 아니라 회피에도 쓰인다.
+		-- 접촉 피해는 이 규칙을 적용하지 않는다.
+		if attackInfo == "column" then
+			local rb = defender.RigidbodyComponent
+			if rb == nil or rb:IsOnGround() == false then
+				return false
+			end
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end

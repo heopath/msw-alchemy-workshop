@@ -183,6 +183,11 @@ script DashShieldComponent extends Component
 
 		if travelled >= self.DashDistance or self.DashTimer <= 0 then
 			self.Dashing = false
+
+			-- T21 에서 확인한 것: SetForce 는 힘을 «설정»하는 것이라 아무도 지우지 않으면
+			-- 계속 작용한다. 대시가 끝나면 반드시 0 으로 되돌린다.
+			rb:SetForce(Vector2.zero)
+
 			log("DashShield ended: travelled=" .. tostring(travelled))
 			return
 		end

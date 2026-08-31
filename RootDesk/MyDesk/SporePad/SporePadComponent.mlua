@@ -185,9 +185,15 @@ script SporePadComponent extends Component
 
 		-- MapleTile bodies expose JustJump for a forced vertical jump. It reports whether the jump
 		-- was accepted, so fall back to a raw upward force when it is refused (e.g. mid-air).
+		--
+		-- ⚠ T21: 이 대비책은 원래 SetForce 였는데 그것이 보스가 날아가 안 돌아오던 원인이다.
+		-- .d.mlua 상 SetForce 는 "힘을 **설정**한다"라서 한 번 넣으면 아무도 지우지 않는 한
+		-- 계속 위로 민다. 그러면 IsOnGround 가 영영 참이 되지 않아 착지 판정도 오지 않는다.
+		-- AddForce 는 "기존 힘에 **더한다"** 이고, msw-combat-system §3-1 이 넉백 같은
+		-- 1회성 충격에 권장하는 쪽이다 (Rigidbody 는 엔진이 자동 감쇠한다).
 		local jumped = rb:JustJump(Vector2(0, force))
 		if jumped == false then
-			rb:SetForce(Vector2(0, force))
+			rb:AddForce(Vector2(0, force))
 		end
 
 		-- Log 5 of 6: distinguishes "JustJump took it" from "JustJump refused, SetForce fallback".

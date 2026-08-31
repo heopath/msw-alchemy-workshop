@@ -1,0 +1,293 @@
+@Component
+script TideSpiritAI extends Component
+
+	-- 리스항구 보스 «파도 정령». 거대 버섯과 같은 Pattern A 구조다 —
+	-- 스크립트가 SpriteRUID 를 직접 갈아끼우고, 모델에 AIChase/AIWander 는 없다.
+	--
+	-- ⚠ 지금은 «기본 패턴만» 있다. 기획의 파도벽(돌진 방패로 뚫는 약점)은 아직 없다.
+	--    돌진 방패의 무적이 재생으로 확인된 뒤에 붙인다 — 무적이 실제로 동작하지
+	--    않으면 그 약점 자체가 성립하지 않기 때문이다.
+	property string StandRUID = "dea8ae4bd5bc46a4b32b338e297d166c"
+
+	property string ColumnRUID = "c85521c00fe148e2ade6326c74a89d94"
+
+	property string DieRUID = "bec3fc17221143d99d76254af4f6943b"
+
+	property string RegionName = "LithHarbor"
+
+	@MinValue(0)
+	property number ColumnInterval = 3.5
+
+	@MinValue(0)
+	property number ColumnIntervalPhase2 = 2.5
+
+	@MinValue(0)
+	property number ColumnTelegraph = 0.6
+
+	@MinValue(0)
+	property number ColumnRecover = 0.4
+
+	@MinValue(0)
+	property number PhaseThreshold = 0.5
+
+	@HideFromInspector
+	property string AIState = "WAIT"
+
+	@HideFromInspector
+	property number StateTimer = 0
+
+	@HideFromInspector
+	property boolean Phase2 = false
+
+	@HideFromInspector
+	property boolean DeathPlayed = false
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- 물기둥 하나만 반복한다. 두 번째 패턴(파도벽)은 T20 잔여분이다.
+		self.Phase2 = false
+		self.DeathPlayed = false
+		self:EnterWait()
+
+		local monster = self.Entity.Monster
+		local maxHp = 0
+		if isvalid(monster) then
+			maxHp = monster.MaxHp
+		end
+
+		log("TideSpiritAI ready on " .. self.Entity.Name .. ", MaxHp=" .. tostring(maxHp) .. ", region=" .. self.RegionName)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- 사망 판정 → 페이즈 판정 → 바라보기 → 패턴 타이머. 거대 버섯과 같은 순서다.
+		local monster = self.Entity.Monster
+
+		if isvalid(monster) and monster.IsDead then
+			if self.DeathPlayed == false then
+				self.DeathPlayed = true
+				self.AIState = "DEAD"
+				self:SetClip(self.DieRUID)
+				self:SetTint(Color(1, 1, 1, 1))
+				self:AnnounceDefeat()
+			end
+			return
+		end
+
+		self:CheckPhase()
+
+		if self.AIState == "WAIT" then
+			self:FaceNearestPlayer()
+		end
+
+		self.StateTimer = self.StateTimer - delta
+		if self.StateTimer > 0 then
+			return
+		end
+
+		if self.AIState == "WAIT" then
+			self:BeginColumn()
+		elseif self.AIState == "TELEGRAPH" then
+			self:ExecuteColumn()
+		elseif self.AIState == "COLUMN" then
+			self:EnterWait()
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CheckPhase()
+		-- 체력 절반 이하에서 주기가 짧아진다. 되돌아가지 않는 일방 전환.
+		if self.Phase2 then
+			return
+		end
+
+		local monster = self.Entity.Monster
+		if not isvalid(monster) then
+			return
+		end
+
+		if monster.MaxHp <= 0 then
+			return
+		end
+
+		if monster.Hp > monster.MaxHp * self.PhaseThreshold then
+			return
+		end
+
+		self.Phase2 = true
+		log("TideSpirit entered phase 2 at Hp=" .. tostring(monster.Hp) .. ", column cycle " .. tostring(self.ColumnInterval) .. "s -> " .. tostring(self.ColumnIntervalPhase2) .. "s")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void EnterWait()
+		-- 다음 패턴까지 제자리. 이 대기가 플레이어의 접근 기회다.
+		self.AIState = "WAIT"
+		self:SetClip(self.StandRUID)
+		self:SetTint(Color(1, 1, 1, 1))
+		self.StateTimer = self:CurrentColumnInterval()
+	end
+
+	@ExecSpace("ServerOnly")
+	method number CurrentColumnInterval()
+		-- 페이즈 2에서 주기 단축.
+		if self.Phase2 then
+			return self.ColumnIntervalPhase2
+		end
+
+		return self.ColumnInterval
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginColumn()
+		-- 예고 구간. 푸른빛으로 물들고 제자리에 서서 플레이어가 읽을 시간을 준다.
+		self.AIState = "TELEGRAPH"
+		self.StateTimer = self.ColumnTelegraph
+		self:SetClip(self.ColumnRUID)
+		self:SetTint(Color(0.5, 0.75, 1, 1))
+		log("TideSpirit telegraphing water column for " .. tostring(self.ColumnTelegraph) .. "s")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ExecuteColumn()
+		-- 솟구치는 프레임에서 범위를 판정하고 짧은 경직 뒤 대기로 돌아간다.
+		self.AIState = "COLUMN"
+		self.StateTimer = self.ColumnRecover
+		self:SetTint(Color(1, 1, 1, 1))
+
+		local attack = self.Entity.TideSpiritAttack
+		if isvalid(attack) then
+			attack:DoColumn()
+		end
+
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			local worldPosition = transform.WorldPosition
+			self:PlayColumnEffect(worldPosition.x, worldPosition.y, worldPosition.z)
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void FaceNearestPlayer()
+		-- 가장 가까운 플레이어 쪽으로 돈다. 대기 중에만 부른다.
+		local target = self:FindNearestPlayer()
+		if not isvalid(target) then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local face = 1
+		if target.TransformComponent.WorldPosition.x < transform.WorldPosition.x then
+			face = -1
+		end
+
+		local scale = transform.Scale
+		transform.Scale = Vector3(math.abs(scale.x) * -face, scale.y, scale.z)
+	end
+
+	@ExecSpace("ServerOnly")
+	method Entity FindNearestPlayer()
+		-- 이 맵의 플레이어 목록. 비어 있으면 nil.
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return nil
+		end
+
+		local mapComponent = map.MapComponent
+		if not isvalid(mapComponent) then
+			return nil
+		end
+
+		local users = _UserService:GetUsersByMapComponent(mapComponent)
+		if users == nil then
+			return nil
+		end
+
+		local myPosition = self.Entity.TransformComponent.WorldPosition
+		local nearest = nil
+		local nearestDistance = 0
+
+		for _, user in pairs(users) do
+			if isvalid(user) then
+				local userPosition = user.TransformComponent.WorldPosition
+				local dx = userPosition.x - myPosition.x
+				local dy = userPosition.y - myPosition.y
+				local distance = dx * dx + dy * dy
+
+				if nearest == nil or distance < nearestDistance then
+					nearest = user
+					nearestDistance = distance
+				end
+			end
+		end
+
+		return nearest
+	end
+
+	@ExecSpace("ServerOnly")
+	method void AnnounceDefeat()
+		-- 보상 신호. 맵 엔티티가 실어 나르므로 Logic 이 경로로 구독할 수 있다.
+		local defeated = BossDefeatedEvent()
+		defeated.RegionName = self.RegionName
+
+		local map = self.Entity.CurrentMap
+		if isvalid(map) then
+			map:SendEvent(defeated)
+		end
+
+		-- 지역 클리어 표시. AbilityTable 에 LithHarbor 행이 아직 없으므로
+		-- 능력은 주어지지 않고 경고 한 줄이 남는다 — 페리온이 T19 전에 그랬던 것과 같다.
+		_AbilityLogic:ReportBossDefeated(self.RegionName)
+
+		log("BossDefeatedEvent sent: region=" .. self.RegionName)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetClip(string ruid)
+		-- Pattern A 는 SpriteRUID 를 직접 넣어 보이는 클립을 바꾼다.
+		if ruid == "" then
+			return
+		end
+
+		local sprite = self.Entity.SpriteRendererComponent
+		if isvalid(sprite) then
+			sprite.SpriteRUID = ruid
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void SetTint(Color tint)
+		-- 예고 표시. Color 는 @Sync 라 클라이언트에도 그대로 보인다.
+		local sprite = self.Entity.SpriteRendererComponent
+		if isvalid(sprite) then
+			sprite.Color = tint
+		end
+	end
+
+	@ExecSpace("Client")
+	method void PlayColumnEffect(number px, number py, number pz)
+		-- 물기둥이 솟는 표현. 파티클은 클라이언트 몫이다.
+		local map = self.Entity.CurrentMap
+		if map == nil then
+			return
+		end
+
+		_ParticleService:PlayBasicParticle(BasicParticleType.DustExplosion, map, Vector3(px, py, pz), 0, Vector3(1.8, 2.2, 1))
+	end
+
+	@ExecSpace("ServerOnly")
+	@EventSender("Self")
+	handler HandleHitEvent(HitEvent event)
+		-- 관찰용. 체력 차감과 사망 처리는 script.Monster 가 한다.
+		local monster = self.Entity.Monster
+		if not isvalid(monster) then
+			return
+		end
+
+		log("TideSpirit took " .. tostring(event.TotalDamage) .. " damage, Hp=" .. tostring(monster.Hp) .. "/" .. tostring(monster.MaxHp))
+	end
+
+end
