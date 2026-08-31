@@ -54,6 +54,17 @@ script TideSpiritAI extends Component
 	@MinValue(0)
 	property number WallHalfThickness = 0.6
 
+	-- T22: 파도벽을 «보이게» 하는 엔티티. 파티클로는 눈에 안 잡혔다.
+	-- Transform + SpriteRenderer 둘뿐인 모델이라 충돌도 트리거도 만들지 않는다 —
+	-- 판정은 TideSpiritAttack 이 그대로 하고, 이것은 순수하게 보여주기용이다.
+	property string WallModelId = "wavewall"
+
+	-- 예고 중에는 옅게, 서 있는 동안은 진하게. 색 하나로 두 상태를 구분한다.
+	-- 발판이 아니라 포털 잠금(BossRoomLockComponent)이 쓰던 방법과 같다.
+	property Color WallTelegraphColor = Color(0.55, 0.85, 1.0, 0.35)
+
+	property Color WallActiveColor = Color(0.75, 1.0, 1.0, 1.0)
+
 	@MinValue(0)
 	property number PhaseThreshold = 0.5
 
@@ -107,6 +118,12 @@ script TideSpiritAI extends Component
 	@HideFromInspector
 	property number HomeY = 0
 
+	@HideFromInspector
+	property any WallEntity = nil
+
+	@HideFromInspector
+	property integer WallSeq = 0
+
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
 		-- 물기둥으로 시작해 물기둥 → 파도벽을 번갈아 쓴다.
@@ -140,6 +157,7 @@ script TideSpiritAI extends Component
 			if self.DeathPlayed == false then
 				self.DeathPlayed = true
 				self.AIState = "DEAD"
+				self:HideWall()
 				self:SetDamageMultiplier(1)
 				self:SetClip(self.DieRUID)
 				self:SetTint(Color(1, 1, 1, 1))
@@ -185,6 +203,7 @@ script TideSpiritAI extends Component
 		elseif self.AIState == "TELEGRAPH_WALL" then
 			self:RaiseWall()
 		elseif self.AIState == "WALL" then
+			self:HideWall()
 			log("TideSpirit wave wall receded at x=" .. tostring(self.WallX))
 			self.NextPattern = "COLUMN"
 			self:EnterWait()
@@ -268,7 +287,85 @@ script TideSpiritAI extends Component
 		self.WallFacing = self:FacingSign()
 		self:SetClip(self.ColumnRUID)
 		self:SetTint(Color(0.35, 0.6, 1, 1))
-		log("TideSpirit telegraphing wave wall for " .. tostring(self.WallTelegraph) .. "s, facing=" .. tostring(self.WallFacing))
+
+		-- 설 자리를 미리 보여준다. 어디에 설지 알아야 돌진 방패를 준비할 수 있다.
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			self.WallX = transform.WorldPosition.x + self.WallFacing * self.WallDistance
+			self:ShowWall(self.WallTelegraphColor)
+		end
+
+		log("TideSpirit telegraphing wave wall for " .. tostring(self.WallTelegraph) .. "s, facing=" .. tostring(self.WallFacing)
+			.. ", 설 자리 x=" .. tostring(self.WallX))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- 보스가 사라질 때 벽만 맵에 남는 것을 막는다.
+		self:HideWall()
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ShowWall(Color tint)
+		-- 벽 엔티티를 세우거나, 이미 서 있으면 색만 바꾼다.
+		-- 위치는 판정 도형과 같은 좌표를 쓴다 — 보이는 것과 맞는 것이 어긋나면 안 된다.
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local centerY = transform.WorldPosition.y + self:WallCenterHeight()
+		local wallPosition = Vector3(self.WallX, centerY, transform.WorldPosition.z)
+
+		if isvalid(self.WallEntity) == false then
+			self.WallSeq = self.WallSeq + 1
+			local name = "WaveWall_" .. tostring(self.WallSeq)
+
+			-- parent 는 반드시 맵 엔티티. nil 이면 LWA-3019 가 나고 동작이 정의되지 않는다.
+			local spawned = _SpawnService:SpawnByModelId(self.WallModelId, name, wallPosition, map)
+			if spawned == nil then
+				log_error("TideSpiritAI: SpawnByModelId('" .. self.WallModelId .. "') returned nil")
+				return
+			end
+
+			self.WallEntity = spawned
+		else
+			local wallTransform = self.WallEntity.TransformComponent
+			if isvalid(wallTransform) then
+				wallTransform.WorldPosition = wallPosition
+			end
+		end
+
+		local sprite = self.WallEntity.SpriteRendererComponent
+		if isvalid(sprite) then
+			sprite.Color = tint
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method number WallCenterHeight()
+		-- 판정 띠의 중심 높이. TideSpiritAttack 의 WallHeight * 0.5 과 같은 값이어야 한다.
+		local attack = self.Entity.TideSpiritAttack
+		if isvalid(attack) then
+			return attack.WallHeight * 0.5
+		end
+
+		return 1.5
+	end
+
+	@ExecSpace("ServerOnly")
+	method void HideWall()
+		-- 벽이 사라졌다는 것이 분명해야 한다. 없어졌는데 있는 줄 알면 억울하다.
+		if isvalid(self.WallEntity) then
+			self.WallEntity:Destroy()
+		end
+
+		self.WallEntity = nil
 	end
 
 	@ExecSpace("ServerOnly")
@@ -287,6 +384,9 @@ script TideSpiritAI extends Component
 
 		local worldPosition = transform.WorldPosition
 		self.WallX = worldPosition.x + self.WallFacing * self.WallDistance
+
+		-- 옅던 예고가 진해진다. 이때부터 실제로 막힌다.
+		self:ShowWall(self.WallActiveColor)
 
 		-- 값을 먼저 세우고 인자 없는 메서드를 부른다. 인자를 받는 메서드를 컴포넌트 너머로
 		-- 부르면 LIA-1115 가 뜬다 (TideSpiritAttack 의 Pending* 주석 참고).
@@ -358,6 +458,7 @@ script TideSpiritAI extends Component
 		-- 무너진 파도. 이 창에 받는 피해가 3배다.
 		self.AIState = "STUN"
 		self.StateTimer = duration
+		self:HideWall()
 		self:SetClip(self.HitRUID)
 		self:SetTint(Color(0.6, 0.75, 1, 1))
 		self:SetDamageMultiplier(self.StunDamageMultiplier)
@@ -472,6 +573,7 @@ script TideSpiritAI extends Component
 			rb:PositionReset()
 		end
 
+		self:HideWall()
 		self.NextPattern = "COLUMN"
 		self:EnterWait()
 		return true
