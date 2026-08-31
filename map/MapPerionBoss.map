@@ -16,7 +16,7 @@
       {
         "id": "a48adf68-4dfc-4379-b0f9-23b45819ee21",
         "path": "/maps/MapPerionBoss",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent,script.BossRoomLockComponent",
         "jsonString": {
           "name": "MapPerionBoss",
           "path": "/maps/MapPerionBoss",
@@ -1108,6 +1108,13 @@
               "@type": "script.MapCameraZoomComponent",
               "Enable": true,
               "ZoomPercent": 60
+            },
+            {
+              "@type": "script.BossRoomLockComponent",
+              "Enable": true,
+              "ReturnPortalName": "PortalToField",
+              "BossName": "RockWarrior01",
+              "CheckInterval": 0.5
             }
           ],
           "@version": 1

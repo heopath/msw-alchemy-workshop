@@ -16,7 +16,7 @@
       {
         "id": "85fa879f-ec15-414c-83c4-2d7d330b8286",
         "path": "/maps/MapHenesysBoss",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent,script.BossRoomLockComponent",
         "jsonString": {
           "name": "MapHenesysBoss",
           "path": "/maps/MapHenesysBoss",
@@ -1108,6 +1108,13 @@
               "@type": "script.MapCameraZoomComponent",
               "Enable": true,
               "ZoomPercent": 60
+            },
+            {
+              "@type": "script.BossRoomLockComponent",
+              "Enable": true,
+              "ReturnPortalName": "PortalToField",
+              "BossName": "GiantMushroom01",
+              "CheckInterval": 0.5
             }
           ],
           "@version": 1

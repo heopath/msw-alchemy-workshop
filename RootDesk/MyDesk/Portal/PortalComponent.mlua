@@ -130,8 +130,34 @@ script PortalComponent extends Component
 	end
 
 	@ExecSpace("ServerOnly")
+	method void SetLocked(boolean locked)
+		-- 잠금 상태와 그 표시를 함께 바꾼다. Color 는 @Sync 라 클라이언트에 그대로 전달된다.
+		if self.Locked == locked then
+			return
+		end
+
+		self.Locked = locked
+
+		local sprite = self.Entity.SpriteRendererComponent
+		if isvalid(sprite) then
+			if locked then
+				sprite.Color = self.LockedColor
+			else
+				sprite.Color = self.OpenColor
+			end
+		end
+
+		log("Portal " .. self.Entity.Name .. (locked and " LOCKED" or " UNLOCKED"))
+	end
+
+	@ExecSpace("ServerOnly")
 	method void Teleport(Entity player)
 		-- Same call the region select screen uses.
+		if self.Locked then
+			log("Portal " .. self.Entity.Name .. " is locked — " .. player.Name .. " cannot leave yet")
+			return
+		end
+
 		if self.TargetMapName == "" then
 			log_error("Portal " .. self.Entity.Name .. " has no TargetMapName")
 			return

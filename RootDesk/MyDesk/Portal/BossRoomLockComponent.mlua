@@ -1,0 +1,120 @@
+@Component
+script BossRoomLockComponent extends Component
+
+	-- 보스방 맵 루트에 붙는다. 들어오면 되돌아가는 포털을 잠그고, 아래 중 하나면 연다.
+	--
+	--   보스 처치       — 정상 클리어
+	--   플레이어 사망   — 못 잡고 죽은 경우. 이게 없으면 갇힌다
+	--   보스 엔티티 소멸 — 처치 후 Destroy 되는 경우까지 포함
+	--
+	-- 갇히는 상황은 절대 만들지 않는다. 판정이 애매하면 여는 쪽으로 기운다.
+
+	property string ReturnPortalName = "PortalToField"
+
+	property string BossName = ""
+
+	-- 매 프레임 볼 필요가 없다. 0.5초마다 확인한다.
+	@MinValue(0)
+	property number CheckInterval = 0.5
+
+	@HideFromInspector
+	property number CheckTimer = 0
+
+	@HideFromInspector
+	property boolean Unlocked = false
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- 맵이 열릴 때 잠근다.
+		self.Unlocked = false
+		self.CheckTimer = 0
+
+		local portal = self:GetPortal()
+		if portal == nil then
+			log_error("BossRoomLock: '" .. self.ReturnPortalName .. "' 포털을 찾지 못했습니다 — 잠그지 않습니다")
+			return
+		end
+
+		portal:SetLocked(true)
+		log("BossRoomLock: " .. self.Entity.Name .. " 입장, 되돌아가는 포털을 잠갔습니다 (보스: " .. self.BossName .. ")")
+	end
+
+	@ExecSpace("ServerOnly")
+	method any GetPortal()
+		-- 되돌아가는 포털의 PortalComponent.
+		local entity = self.Entity:GetChildByName(self.ReturnPortalName, false)
+		if not isvalid(entity) then
+			return nil
+		end
+
+		return entity:GetComponent("script.PortalComponent")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- 이미 열었으면 더 볼 것이 없다.
+		if self.Unlocked then
+			return
+		end
+
+		self.CheckTimer = self.CheckTimer - delta
+		if self.CheckTimer > 0 then
+			return
+		end
+		self.CheckTimer = self.CheckInterval
+
+		local reason = self:FindUnlockReason()
+		if reason == "" then
+			return
+		end
+
+		local portal = self:GetPortal()
+		if portal == nil then
+			return
+		end
+
+		self.Unlocked = true
+		portal:SetLocked(false)
+		log("BossRoomLock: 포털을 열었습니다 — " .. reason)
+	end
+
+	@ExecSpace("ServerOnly")
+	method string FindUnlockReason()
+		-- 열어야 할 이유를 찾으면 그 이유를, 없으면 빈 문자열을 돌려준다.
+
+		-- 1. 보스가 죽었거나 사라졌다
+		if self.BossName ~= "" then
+			local boss = self.Entity:GetChildByName(self.BossName, false)
+			if not isvalid(boss) then
+				return "보스 엔티티가 사라짐 (처치 후 소멸)"
+			end
+
+			local monster = boss.Monster
+			if isvalid(monster) and monster.IsDead then
+				return "보스 처치"
+			end
+		end
+
+		-- 2. 이 맵의 플레이어 중 죽은 사람이 있다. 갇히지 않게 하는 것이 최우선이다.
+		local map = self.Entity.CurrentMap
+		if isvalid(map) then
+			local mapComponent = map.MapComponent
+			if isvalid(mapComponent) then
+				local users = _UserService:GetUsersByMapComponent(mapComponent)
+				if users ~= nil then
+					for _, user in pairs(users) do
+						if isvalid(user) then
+							local playerComponent = user.PlayerComponent
+							if isvalid(playerComponent) and playerComponent:IsDead() then
+								return "플레이어 사망 (" .. user.Name .. ")"
+							end
+						end
+					end
+				end
+			end
+		end
+
+		return ""
+	end
+
+end
