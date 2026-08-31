@@ -35,6 +35,12 @@ script DiveSlamAttack extends AttackComponent
 	@HideFromInspector
 	property number DiveStartY = 0
 
+	-- True only between "a spore pad launched me" and "I touched the ground again".
+	-- The dive is gated on this so the pad is the single entrance to the attack — a plain
+	-- jump gives nothing, which is what ties the attack back to the ability.
+	@HideFromInspector
+	property boolean PadLaunched = false
+
 	property any keyHandler = nil
 
 	method void OnBeginPlay()
@@ -96,6 +102,24 @@ script DiveSlamAttack extends AttackComponent
 		self:RequestDive()
 	end
 
+	@ExecSpace("ServerOnly")
+	@EventSender("Self")
+	handler HandleSporePadBounceEvent(SporePadBounceEvent event)
+		-- Sent by SporePadComponent to whatever it bounced. RockWarriorAI listens to the same
+		-- event on the monster side; both judgements run on the server, so the space matches.
+		self.PadLaunched = true
+
+		-- A pad hit while already diving cancels the dive. It has to: OnUpdate pushes down
+		-- every frame while diving and would fight the pad's upward impulse. Being thrown back
+		-- up and re-diving is also the reading that matches what the player sees.
+		if self.Diving then
+			self.Diving = false
+			log("DiveSlam cancelled: bounced again mid-dive")
+		end
+
+		log("DiveSlam armed by spore pad (force=" .. tostring(event.BounceForce) .. ")")
+	end
+
 	@ExecSpace("Server")
 	method void RequestDive()
 		-- The server decides whether a dive may start. Grounded input is left alone so the
@@ -104,18 +128,24 @@ script DiveSlamAttack extends AttackComponent
 			return
 		end
 
-		if _AbilityLogic:HasAbility(self.RequiredAbility) == false then
-			log("DiveSlam refused: ability '" .. self.RequiredAbility .. "' not owned")
-			return
-		end
-
 		local rb = self.Entity.RigidbodyComponent
 		if rb == nil then
 			return
 		end
 
+		-- Checked before anything that logs: on the ground the down arrow keeps its normal
+		-- meaning, and refusing it loudly every press would bury the real messages.
 		if rb:IsOnGround() then
-			-- On the ground the down arrow keeps its normal meaning.
+			return
+		end
+
+		if _AbilityLogic:HasAbility(self.RequiredAbility) == false then
+			log("DiveSlam refused: ability '" .. self.RequiredAbility .. "' not owned")
+			return
+		end
+
+		if self.PadLaunched == false then
+			log("DiveSlam refused: not launched by a spore pad")
 			return
 		end
 
@@ -131,18 +161,26 @@ script DiveSlamAttack extends AttackComponent
 
 	@ExecSpace("ServerOnly")
 	method void OnUpdate(number delta)
-		-- Drives the descent and watches for the landing frame.
-		if self.Diving == false then
-			return
-		end
-
+		-- Two jobs: expire the pad-launch window on landing, and drive an active descent.
 		local rb = self.Entity.RigidbodyComponent
 		if rb == nil then
 			self.Diving = false
+			self.PadLaunched = false
 			return
 		end
 
-		if rb:IsOnGround() then
+		local grounded = rb:IsOnGround()
+
+		if self.Diving == false then
+			-- Touching the ground ends the window, whether or not the dive was ever used.
+			if grounded and self.PadLaunched then
+				self.PadLaunched = false
+				log("DiveSlam window closed: landed without diving")
+			end
+			return
+		end
+
+		if grounded then
 			self:Land()
 			return
 		end
@@ -154,7 +192,9 @@ script DiveSlamAttack extends AttackComponent
 	@ExecSpace("ServerOnly")
 	method void Land()
 		-- Landing frame: fall distance decides the damage, then one circular hit.
+		-- Landing also closes the pad-launch window; another bounce is needed to dive again.
 		self.Diving = false
+		self.PadLaunched = false
 
 		local transform = self.Entity.TransformComponent
 		if not isvalid(transform) then
