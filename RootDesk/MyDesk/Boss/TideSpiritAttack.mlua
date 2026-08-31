@@ -16,6 +16,47 @@ script TideSpiritAttack extends AttackComponent
 	@MinValue(0)
 	property number ContactInterval = 0.03
 
+	-- ---- 파도벽 ----
+	@MinValue(0)
+	property number WallDamage = 18
+
+	-- 파도가 솟는 순간 보스 주변을 쓸어내는 피해. 벽이 서기 전에 안쪽에 들어가 버티는 것을 막는다.
+	@MinValue(0)
+	property number SweepDamage = 22
+
+	-- 벽 띠의 높이. 폭은 AI 가 넘겨주는 WallHalfThickness 로 정해진다.
+	@MinValue(0)
+	property number WallHeight = 3.0
+
+	@MinValue(0)
+	property number WallKnockbackX = 6.0
+
+	@MinValue(0)
+	property number WallKnockbackY = 2.0
+
+	@HideFromInspector
+	property any WallShape = nil
+
+	@HideFromInspector
+	property any SweepShape = nil
+
+	-- TideSpiritAI 가 세워두고 인자 없는 메서드를 부른다.
+	-- 인자를 받는 메서드를 `self.Entity.TideSpiritAttack:Method(x)` 로 부르면 갱신 뒤
+	-- `LIA-1115 'DoWaveSweep' not found in 'TideSpiritAttack'` 가 뜬다 (인자 없는
+	-- DoColumn 은 같은 자리에서 정상). 거대 버섯의 DoStomp() 와 RockWarriorAI 가
+	-- attack.IsCharging 를 넘기는 방식 — 이 프로젝트에서 이미 동작하는 두 형태를 합쳤다.
+	@HideFromInspector
+	property number PendingWallX = 0
+
+	@HideFromInspector
+	property number PendingHalfThickness = 0.6
+
+	@HideFromInspector
+	property number PendingFacing = 1
+
+	@HideFromInspector
+	property number PendingSweepDistance = 3
+
 	property Vector2 ContactBoxSize = Vector2(1.24, 1.42)
 
 	property Vector2 ContactBoxOffset = Vector2(0.06, 0.71)
@@ -34,6 +75,8 @@ script TideSpiritAttack extends AttackComponent
 		-- 재사용할 판정 도형을 만들어두고 접촉 피해 틱을 시작한다.
 		self.ContactShape = BoxShape(Vector2.zero, self.ContactBoxSize, 0)
 		self.ColumnShape = CircleShape(Vector2.zero, self.ColumnRadius)
+		self.WallShape = BoxShape(Vector2.zero, Vector2(1.2, self.WallHeight), 0)
+		self.SweepShape = CircleShape(Vector2.zero, 3.0)
 
 		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
 			self:ContactTick()
@@ -88,10 +131,76 @@ script TideSpiritAttack extends AttackComponent
 		log("TideSpirit water column resolved at x=" .. tostring(worldPosition.x) .. " radius=" .. tostring(self.ColumnRadius))
 	end
 
+	@ExecSpace("ServerOnly")
+	method void DoWaveSweep()
+		-- 파도가 솟는 순간 보스 주변을 쓸어낸다. 안에 있던 플레이어는 벽 바깥으로 밀려난다.
+		-- 인자는 PendingSweepDistance / PendingFacing 으로 받는다 (위 주석 참고).
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.SweepShape.Radius = self.PendingSweepDistance
+		self.SweepShape.Position = Vector2(worldPosition.x, worldPosition.y + 0.5)
+
+		local hits = self:Attack(self.SweepShape, "wave", CollisionGroups.Player)
+		self:PushOutward(hits)
+
+		log("TideSpirit wave sweep at x=" .. tostring(worldPosition.x) .. " radius=" .. tostring(self.PendingSweepDistance))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void DoWallBlock()
+		-- 서 있는 벽 띠. 매 프레임 부르지만 반복 피해는 플레이어의 ImmuneCooldown 이 막는다.
+		-- 돌진 방패로 무적인 채 지나가면 IsHitTarget 이 false 라 피해도 넉백도 없다 —
+		-- 그것이 「뚫었다」의 실제 표현이고, 뚫린 판정 자체는 TideSpiritAI 가 한다.
+		-- 인자는 PendingWallX / PendingHalfThickness / PendingFacing 으로 받는다.
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		self.WallShape.Size = Vector2(self.PendingHalfThickness * 2, self.WallHeight)
+		self.WallShape.Angle = 0
+		self.WallShape.Position = Vector2(self.PendingWallX, transform.WorldPosition.y + self.WallHeight * 0.5)
+
+		local hits = self:Attack(self.WallShape, "wall", CollisionGroups.Player)
+		self:PushOutward(hits)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void PushOutward(any hits)
+		-- 맞은 대상을 보스 반대쪽으로 민다. 넉백은 피해와 별개라 Attack 이 돌려준 목록을 쓴다.
+		if hits == nil then
+			return
+		end
+
+		for _, hit in pairs(hits) do
+			if isvalid(hit) then
+				local target = hit.Entity
+				if isvalid(target) then
+					local rb = target.RigidbodyComponent
+					if rb ~= nil then
+						rb:AddForce(Vector2(self.PendingFacing * self.WallKnockbackX, self.WallKnockbackY))
+					end
+				end
+			end
+		end
+	end
+
 	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
 		-- 물기둥과 접촉은 피해가 다르다. 부모가 @ExecSpace 를 안 달았으므로 여기도 안 단다 (LEA-3014).
 		if attackInfo == "column" then
 			return math.floor(self.ColumnDamage)
+		end
+
+		if attackInfo == "wall" then
+			return math.floor(self.WallDamage)
+		end
+
+		if attackInfo == "wave" then
+			return math.floor(self.SweepDamage)
 		end
 
 		return math.floor(self.ContactDamage)

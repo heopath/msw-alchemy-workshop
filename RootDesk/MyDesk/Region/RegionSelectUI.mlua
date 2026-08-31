@@ -13,15 +13,23 @@ script RegionSelectUI extends Component
 
 	property TextGUIRendererComponent labelPerion = "44c04e51-7193-49c2-90aa-0db39d7b7bb4"
 
+	property ButtonComponent btnLithHarbor = "b1844e82-51fa-4411-9e3c-788d307008cd"
+
+	property TextGUIRendererComponent labelLithHarbor = "b1844e82-51fa-4411-9e3c-788d307008cd"
+
 	property string RegionA = "Henesys"
 
 	property string RegionB = "Perion"
+
+	property string RegionC = "LithHarbor"
 
 	property string ClearedSuffix = "  (클리어)"
 
 	property any henesysHandler = nil
 
 	property any perionHandler = nil
+
+	property any lithHarborHandler = nil
 
 	property any keyHandler = nil
 
@@ -36,6 +44,10 @@ script RegionSelectUI extends Component
 
 		self.perionHandler = self.btnPerion.Entity:ConnectEvent(ButtonClickEvent, function()
 			self:OnRegionChosen(self.RegionB)
+		end)
+
+		self.lithHarborHandler = self.btnLithHarbor.Entity:ConnectEvent(ButtonClickEvent, function()
+			self:OnRegionChosen(self.RegionC)
 		end)
 
 		self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
@@ -63,6 +75,11 @@ script RegionSelectUI extends Component
 		if self.perionHandler ~= nil then
 			self.btnPerion.Entity:DisconnectEvent(ButtonClickEvent, self.perionHandler)
 			self.perionHandler = nil
+		end
+
+		if self.lithHarborHandler ~= nil then
+			self.btnLithHarbor.Entity:DisconnectEvent(ButtonClickEvent, self.lithHarborHandler)
+			self.lithHarborHandler = nil
 		end
 
 		if self.keyHandler ~= nil then
@@ -94,6 +111,7 @@ script RegionSelectUI extends Component
 		-- Display names come from RegionTable; the cleared mark comes from run state.
 		self.labelHenesys.Text = self:BuildLabel(self.RegionA)
 		self.labelPerion.Text = self:BuildLabel(self.RegionB)
+		self.labelLithHarbor.Text = self:BuildLabel(self.RegionC)
 	end
 
 	@ExecSpace("ClientOnly")

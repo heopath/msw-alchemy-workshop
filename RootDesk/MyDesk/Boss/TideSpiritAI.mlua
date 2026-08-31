@@ -1,20 +1,23 @@
 @Component
 script TideSpiritAI extends Component
 
-	-- 리스항구 보스 «파도 정령». 거대 버섯과 같은 Pattern A 구조다 —
-	-- 스크립트가 SpriteRUID 를 직접 갈아끼우고, 모델에 AIChase/AIWander 는 없다.
+	-- 리스항구 보스 «파도 정령». Pattern A 구조다 — 스크립트가 SpriteRUID 를 직접 갈아끼우고
+	-- 모델에 AIChase/AIWander 는 없다. 거대 버섯·바위 전사와 같은 틀이다.
 	--
-	-- ⚠ 지금은 «기본 패턴만» 있다. 기획의 파도벽(돌진 방패로 뚫는 약점)은 아직 없다.
-	--    돌진 방패의 무적이 재생으로 확인된 뒤에 붙인다 — 무적이 실제로 동작하지
-	--    않으면 그 약점 자체가 성립하지 않기 때문이다.
+	-- 약점(T20): 파도벽을 «돌진 방패의 무적»으로 뚫으면 5초 경직 + 받는 피해 3배.
+	-- 바위 전사가 포자 발판에 당하는 것과 완전히 같은 구조다 —
+	-- 능력으로 무력화 → 경직 → 그 창에 화력 집중. 새 틀을 만들지 않았다.
 	property string StandRUID = "dea8ae4bd5bc46a4b32b338e297d166c"
 
 	property string ColumnRUID = "c85521c00fe148e2ade6326c74a89d94"
+
+	property string HitRUID = "38f4bd226f6d4e619bb19e67d2b8fb0f"
 
 	property string DieRUID = "bec3fc17221143d99d76254af4f6943b"
 
 	property string RegionName = "LithHarbor"
 
+	-- ---- 패턴 A: 물기둥 (발밑 범위, 지상 판정) ----
 	@MinValue(0)
 	property number ColumnInterval = 3.5
 
@@ -27,8 +30,46 @@ script TideSpiritAI extends Component
 	@MinValue(0)
 	property number ColumnRecover = 0.4
 
+	-- ---- 패턴 B: 파도벽 (접근 차단) ----
+	@MinValue(0)
+	property number WallInterval = 4.0
+
+	@MinValue(0)
+	property number WallIntervalPhase2 = 3.0
+
+	@MinValue(0)
+	property number WallTelegraph = 0.6
+
+	-- 벽이 서 있는 시간. 한 사이클 11.1초 중 2초만 서 있다 —
+	-- 나머지 9.1초에 걸어 들어갈 수 있어야 «능력 없이도 잡을 수 있다»가 성립한다.
+	@MinValue(0)
+	property number WallDuration = 2.0
+
+	-- 보스 앞 몇 유닛에 세우는가.
+	@MinValue(0)
+	property number WallDistance = 3.0
+
+	-- 벽 띠의 반폭. 대시(10유닛/초)가 이 띠를 지나는 데 0.12초 = 60fps 기준 7프레임이라
+	-- 매 프레임 검사로 놓치지 않는다.
+	@MinValue(0)
+	property number WallHalfThickness = 0.6
+
 	@MinValue(0)
 	property number PhaseThreshold = 0.5
+
+	-- ---- 약점 ----
+	@MinValue(0)
+	property number DashPierceStunDuration = 5.0
+
+	@MinValue(0)
+	property number StunDamageMultiplier = 3.0
+
+	-- ---- 안전장치 (T21 과 같은 것) ----
+	@MinValue(0)
+	property number LeashMargin = 0.5
+
+	@MinValue(0)
+	property number LeashPushIn = 1.0
 
 	@HideFromInspector
 	property string AIState = "WAIT"
@@ -37,17 +78,49 @@ script TideSpiritAI extends Component
 	property number StateTimer = 0
 
 	@HideFromInspector
+	property string NextPattern = "COLUMN"
+
+	@HideFromInspector
 	property boolean Phase2 = false
 
 	@HideFromInspector
 	property boolean DeathPlayed = false
 
+	@HideFromInspector
+	property number WallX = 0
+
+	@HideFromInspector
+	property number WallFacing = 1
+
+	@HideFromInspector
+	property boolean BoundsReady = false
+
+	@HideFromInspector
+	property number BoundMinX = 0
+
+	@HideFromInspector
+	property number BoundMaxX = 0
+
+	@HideFromInspector
+	property number BoundMinY = 0
+
+	@HideFromInspector
+	property number HomeY = 0
+
 	@ExecSpace("ServerOnly")
 	method void OnBeginPlay()
-		-- 물기둥 하나만 반복한다. 두 번째 패턴(파도벽)은 T20 잔여분이다.
+		-- 물기둥으로 시작해 물기둥 → 파도벽을 번갈아 쓴다.
+		self.NextPattern = "COLUMN"
 		self.Phase2 = false
 		self.DeathPlayed = false
 		self:EnterWait()
+
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			self.HomeY = transform.WorldPosition.y
+		end
+
+		self:ResolveBounds()
 
 		local monster = self.Entity.Monster
 		local maxHp = 0
@@ -60,17 +133,22 @@ script TideSpiritAI extends Component
 
 	@ExecSpace("ServerOnly")
 	method void OnUpdate(number delta)
-		-- 사망 판정 → 페이즈 판정 → 바라보기 → 패턴 타이머. 거대 버섯과 같은 순서다.
+		-- 사망 → 경계 → 페이즈 → 상태 기계. 앞 두 보스와 같은 순서다.
 		local monster = self.Entity.Monster
 
 		if isvalid(monster) and monster.IsDead then
 			if self.DeathPlayed == false then
 				self.DeathPlayed = true
 				self.AIState = "DEAD"
+				self:SetDamageMultiplier(1)
 				self:SetClip(self.DieRUID)
 				self:SetTint(Color(1, 1, 1, 1))
 				self:AnnounceDefeat()
 			end
+			return
+		end
+
+		if self:EnforceLeash() then
 			return
 		end
 
@@ -80,51 +158,57 @@ script TideSpiritAI extends Component
 			self:FaceNearestPlayer()
 		end
 
+		if self.AIState == "WALL" then
+			-- 벽이 서 있는 동안은 매 프레임 판정한다. 뚫렸는지 먼저 보고, 아니면 막는다.
+			if self:CheckWallPierced() then
+				return
+			end
+			self:TickWall()
+		end
+
 		self.StateTimer = self.StateTimer - delta
 		if self.StateTimer > 0 then
 			return
 		end
 
 		if self.AIState == "WAIT" then
-			self:BeginColumn()
-		elseif self.AIState == "TELEGRAPH" then
+			if self.NextPattern == "COLUMN" then
+				self:BeginColumnTelegraph()
+			else
+				self:BeginWallTelegraph()
+			end
+		elseif self.AIState == "TELEGRAPH_COLUMN" then
 			self:ExecuteColumn()
 		elseif self.AIState == "COLUMN" then
+			self.NextPattern = "WALL"
+			self:EnterWait()
+		elseif self.AIState == "TELEGRAPH_WALL" then
+			self:RaiseWall()
+		elseif self.AIState == "WALL" then
+			log("TideSpirit wave wall receded at x=" .. tostring(self.WallX))
+			self.NextPattern = "COLUMN"
+			self:EnterWait()
+		elseif self.AIState == "STUN" then
+			self.NextPattern = "COLUMN"
 			self:EnterWait()
 		end
 	end
 
-	@ExecSpace("ServerOnly")
-	method void CheckPhase()
-		-- 체력 절반 이하에서 주기가 짧아진다. 되돌아가지 않는 일방 전환.
-		if self.Phase2 then
-			return
-		end
-
-		local monster = self.Entity.Monster
-		if not isvalid(monster) then
-			return
-		end
-
-		if monster.MaxHp <= 0 then
-			return
-		end
-
-		if monster.Hp > monster.MaxHp * self.PhaseThreshold then
-			return
-		end
-
-		self.Phase2 = true
-		log("TideSpirit entered phase 2 at Hp=" .. tostring(monster.Hp) .. ", column cycle " .. tostring(self.ColumnInterval) .. "s -> " .. tostring(self.ColumnIntervalPhase2) .. "s")
-	end
+	-- ---------- 상태 ----------
 
 	@ExecSpace("ServerOnly")
 	method void EnterWait()
-		-- 다음 패턴까지 제자리. 이 대기가 플레이어의 접근 기회다.
+		-- 패턴 사이의 빈 시간. 이것이 플레이어의 접근 기회다.
 		self.AIState = "WAIT"
+		self:SetDamageMultiplier(1)
 		self:SetClip(self.StandRUID)
 		self:SetTint(Color(1, 1, 1, 1))
-		self.StateTimer = self:CurrentColumnInterval()
+
+		if self.NextPattern == "COLUMN" then
+			self.StateTimer = self:CurrentColumnInterval()
+		else
+			self.StateTimer = self:CurrentWallInterval()
+		end
 	end
 
 	@ExecSpace("ServerOnly")
@@ -138,9 +222,19 @@ script TideSpiritAI extends Component
 	end
 
 	@ExecSpace("ServerOnly")
-	method void BeginColumn()
+	method number CurrentWallInterval()
+		-- 페이즈 2에서 주기 단축.
+		if self.Phase2 then
+			return self.WallIntervalPhase2
+		end
+
+		return self.WallInterval
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginColumnTelegraph()
 		-- 예고 구간. 푸른빛으로 물들고 제자리에 서서 플레이어가 읽을 시간을 준다.
-		self.AIState = "TELEGRAPH"
+		self.AIState = "TELEGRAPH_COLUMN"
 		self.StateTimer = self.ColumnTelegraph
 		self:SetClip(self.ColumnRUID)
 		self:SetTint(Color(0.5, 0.75, 1, 1))
@@ -164,6 +258,249 @@ script TideSpiritAI extends Component
 			local worldPosition = transform.WorldPosition
 			self:PlayColumnEffect(worldPosition.x, worldPosition.y, worldPosition.z)
 		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void BeginWallTelegraph()
+		-- 파도가 밀려오기 전 예고. 돌진 방패를 준비할 시간이기도 하다.
+		self.AIState = "TELEGRAPH_WALL"
+		self.StateTimer = self.WallTelegraph
+		self.WallFacing = self:FacingSign()
+		self:SetClip(self.ColumnRUID)
+		self:SetTint(Color(0.35, 0.6, 1, 1))
+		log("TideSpirit telegraphing wave wall for " .. tostring(self.WallTelegraph) .. "s, facing=" .. tostring(self.WallFacing))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void RaiseWall()
+		-- 파도가 솟는다. 솟는 순간 보스 주변에 있던 플레이어는 바깥으로 쓸려 나간다 —
+		-- 그래야 벽이 서기 전에 안쪽에 들어가 버티는 것으로 무력화되지 않는다.
+		self.AIState = "WALL"
+		self.StateTimer = self.WallDuration
+		self:SetTint(Color(0.55, 0.8, 1, 1))
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			self:EnterWait()
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.WallX = worldPosition.x + self.WallFacing * self.WallDistance
+
+		-- 값을 먼저 세우고 인자 없는 메서드를 부른다. 인자를 받는 메서드를 컴포넌트 너머로
+		-- 부르면 LIA-1115 가 뜬다 (TideSpiritAttack 의 Pending* 주석 참고).
+		local attack = self.Entity.TideSpiritAttack
+		if isvalid(attack) then
+			attack.PendingSweepDistance = self.WallDistance
+			attack.PendingFacing = self.WallFacing
+			attack:DoWaveSweep()
+		end
+
+		self:PlayWallEffect(self.WallX, worldPosition.y, worldPosition.z)
+
+		log("TideSpirit raised wave wall at x=" .. tostring(self.WallX)
+			.. " (보스 x=" .. tostring(worldPosition.x) .. ", " .. tostring(self.WallDuration) .. "초)")
+	end
+
+	@ExecSpace("ServerOnly")
+	method void TickWall()
+		-- 벽 띠 안에 있는 플레이어를 밀어낸다. 반복 피해는 ImmuneCooldown 이 막는다.
+		local attack = self.Entity.TideSpiritAttack
+		if isvalid(attack) then
+			attack.PendingWallX = self.WallX
+			attack.PendingHalfThickness = self.WallHalfThickness
+			attack.PendingFacing = self.WallFacing
+			attack:DoWallBlock()
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean CheckWallPierced()
+		-- 약점 판정. 돌진 방패로 «무적인 채» 벽 띠를 지나면 파도가 무너지고 보스가 무방비가 된다.
+		--
+		-- 판정 근거는 플레이어 쪽 DashShieldComponent.Dashing 이다. 서버 속성이라 여기서 읽힌다.
+		-- 발판→바위 전사가 이벤트로 이어진 것과 달리 여기서는 보스가 직접 읽는데,
+		-- 「벽을 지나갔다」가 위치 조건이라 이벤트로 표현할 자리가 없기 때문이다.
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return false
+		end
+
+		local mapComponent = map.MapComponent
+		if not isvalid(mapComponent) then
+			return false
+		end
+
+		local users = _UserService:GetUsersByMapComponent(mapComponent)
+		if users == nil then
+			return false
+		end
+
+		for _, user in pairs(users) do
+			if isvalid(user) then
+				local dash = user.DashShieldComponent
+				if isvalid(dash) and dash.Dashing then
+					local userX = user.TransformComponent.WorldPosition.x
+					if math.abs(userX - self.WallX) <= self.WallHalfThickness then
+						self:EnterStun(self.DashPierceStunDuration, "dash shield", user.Name)
+						return true
+					end
+				end
+			end
+		end
+
+		return false
+	end
+
+	@ExecSpace("ServerOnly")
+	method void EnterStun(number duration, string cause, string byWhom)
+		-- 무너진 파도. 이 창에 받는 피해가 3배다.
+		self.AIState = "STUN"
+		self.StateTimer = duration
+		self:SetClip(self.HitRUID)
+		self:SetTint(Color(0.6, 0.75, 1, 1))
+		self:SetDamageMultiplier(self.StunDamageMultiplier)
+
+		log("TideSpirit wave wall broken by " .. cause .. " (" .. byWhom .. ") -> staggered "
+			.. tostring(duration) .. "s, damage x" .. tostring(self.StunDamageMultiplier))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void CheckPhase()
+		-- 체력 절반 이하에서 두 주기가 모두 짧아진다. 되돌아가지 않는 일방 전환.
+		if self.Phase2 then
+			return
+		end
+
+		local monster = self.Entity.Monster
+		if not isvalid(monster) then
+			return
+		end
+
+		if monster.MaxHp <= 0 then
+			return
+		end
+
+		if monster.Hp > monster.MaxHp * self.PhaseThreshold then
+			return
+		end
+
+		self.Phase2 = true
+		log("TideSpirit entered phase 2 at Hp=" .. tostring(monster.Hp)
+			.. ", column " .. tostring(self.ColumnInterval) .. "s -> " .. tostring(self.ColumnIntervalPhase2) .. "s"
+			.. ", wall " .. tostring(self.WallInterval) .. "s -> " .. tostring(self.WallIntervalPhase2) .. "s")
+	end
+
+	-- ---------- 안전장치 (T21) ----------
+
+	@ExecSpace("ServerOnly")
+	method void ResolveBounds()
+		-- 맵 경계를 한 번 읽어둔다. 방 크기를 스크립트에 박아넣지 않기 위해서다.
+		local map = self.Entity.CurrentMap
+		if not isvalid(map) then
+			return
+		end
+
+		local mapComponent = map.MapComponent
+		if not isvalid(mapComponent) then
+			return
+		end
+
+		local leftBottom, rightTop = mapComponent:GetBound()
+		if leftBottom == nil or rightTop == nil then
+			return
+		end
+
+		if rightTop.x - leftBottom.x < 1 then
+			log_warning("TideSpiritAI: 맵 경계가 이상해 leash 를 켜지 않습니다 ("
+				.. tostring(leftBottom.x) .. " ~ " .. tostring(rightTop.x) .. ")")
+			return
+		end
+
+		self.BoundMinX = leftBottom.x + self.LeashMargin
+		self.BoundMaxX = rightTop.x - self.LeashMargin
+		self.BoundMinY = leftBottom.y - self.LeashMargin
+		self.BoundsReady = true
+
+		log("TideSpiritAI leash: x " .. tostring(self.BoundMinX) .. " ~ " .. tostring(self.BoundMaxX)
+			.. ", floor y " .. tostring(self.BoundMinY))
+	end
+
+	@ExecSpace("ServerOnly")
+	method boolean EnforceLeash()
+		-- 경계 밖이면 안쪽으로 되돌린다. 보스가 사라지면 전투가 성립하지 않는다.
+		if self.BoundsReady == false then
+			return false
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return false
+		end
+
+		local position = transform.WorldPosition
+		local targetX = position.x
+		local targetY = position.y
+		local outside = false
+
+		if position.x < self.BoundMinX then
+			targetX = self.BoundMinX + self.LeashPushIn
+			outside = true
+		elseif position.x > self.BoundMaxX then
+			targetX = self.BoundMaxX - self.LeashPushIn
+			outside = true
+		end
+
+		if position.y < self.BoundMinY then
+			targetY = self.HomeY
+			outside = true
+		end
+
+		if outside == false then
+			return false
+		end
+
+		log_warning("TideSpirit left the room at (" .. tostring(position.x) .. ", " .. tostring(position.y)
+			.. ") -> 되돌림 (" .. tostring(targetX) .. ", " .. tostring(targetY) .. ")")
+
+		local rb = self.Entity.RigidbodyComponent
+		if isvalid(rb) then
+			rb:SetForce(Vector2.zero)
+			rb.MoveVelocity = Vector2.zero
+			rb:SetWorldPosition(Vector2(targetX, targetY))
+			rb:PositionReset()
+		end
+
+		self.NextPattern = "COLUMN"
+		self:EnterWait()
+		return true
+	end
+
+	-- ---------- helpers ----------
+
+	@ExecSpace("ServerOnly")
+	method void SetDamageMultiplier(number multiplier)
+		-- script.Monster 가 Hp 를 가지므로 경직 배율도 거기에만 건다.
+		local monster = self.Entity.Monster
+		if isvalid(monster) then
+			monster.DamageMultiplier = multiplier
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method number FacingSign()
+		-- 몹 스프라이트는 왼쪽을 보게 그려져 있어 Scale.x 가 뒤집혀 있다.
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return 1
+		end
+
+		if transform.Scale.x > 0 then
+			return -1
+		end
+
+		return 1
 	end
 
 	@ExecSpace("ServerOnly")
@@ -229,7 +566,7 @@ script TideSpiritAI extends Component
 
 	@ExecSpace("ServerOnly")
 	method void AnnounceDefeat()
-		-- 보상 신호. 맵 엔티티가 실어 나르므로 Logic 이 경로로 구독할 수 있다.
+		-- 보상 신호. 앞 두 보스와 같은 형태다.
 		local defeated = BossDefeatedEvent()
 		defeated.RegionName = self.RegionName
 
@@ -238,8 +575,8 @@ script TideSpiritAI extends Component
 			map:SendEvent(defeated)
 		end
 
-		-- 지역 클리어 표시. AbilityTable 에 LithHarbor 행이 아직 없으므로
-		-- 능력은 주어지지 않고 경고 한 줄이 남는다 — 페리온이 T19 전에 그랬던 것과 같다.
+		-- AbilityTable 에 LithHarbor 행이 아직 없으므로 지역 클리어만 되고 능력은 없다.
+		-- 페리온이 T19 전에 그랬던 것과 같은 상태다.
 		_AbilityLogic:ReportBossDefeated(self.RegionName)
 
 		log("BossDefeatedEvent sent: region=" .. self.RegionName)
@@ -260,7 +597,7 @@ script TideSpiritAI extends Component
 
 	@ExecSpace("ServerOnly")
 	method void SetTint(Color tint)
-		-- 예고 표시. Color 는 @Sync 라 클라이언트에도 그대로 보인다.
+		-- 예고와 경직 표시. Color 는 @Sync 라 클라이언트에도 그대로 보인다.
 		local sprite = self.Entity.SpriteRendererComponent
 		if isvalid(sprite) then
 			sprite.Color = tint
@@ -276,6 +613,17 @@ script TideSpiritAI extends Component
 		end
 
 		_ParticleService:PlayBasicParticle(BasicParticleType.DustExplosion, map, Vector3(px, py, pz), 0, Vector3(1.8, 2.2, 1))
+	end
+
+	@ExecSpace("Client")
+	method void PlayWallEffect(number px, number py, number pz)
+		-- 파도벽이 서 있는 자리를 보이게 한다. 안 보이면 플레이어는 어디를 뚫어야 할지 모른다.
+		local map = self.Entity.CurrentMap
+		if map == nil then
+			return
+		end
+
+		_ParticleService:PlayBasicParticle(BasicParticleType.DustExplosion, map, Vector3(px, py, pz), 0, Vector3(1.2, 3.0, 1))
 	end
 
 	@ExecSpace("ServerOnly")
