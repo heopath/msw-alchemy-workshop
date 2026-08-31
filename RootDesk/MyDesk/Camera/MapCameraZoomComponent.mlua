@@ -1,0 +1,44 @@
+@Component
+script MapCameraZoomComponent extends Component
+
+	-- 맵마다 카메라 배율을 정한다. 맵 루트 엔티티에 붙는다.
+	--
+	-- PC 화면에 보이는 월드 폭은 배율 100에서 12.8유닛이다 (platform.md §5).
+	-- 보스방은 20.56유닛이라 기본 배율로는 절반 조금 넘게만 보이고, 보스가 반대쪽 끝에 있으면
+	-- 화면 밖으로 나간다. 보스전은 보스가 계속 보여야 하므로 보스방에서만 줄여 잡는다.
+	--
+	--   보이는 폭 ≈ 12.8 × (100 / ZoomPercent)
+	--   60 → 약 21.3유닛  (보스방 20.56이 여유 있게 들어온다)
+	--   100 → 12.8유닛    (평야. 넓은 맵을 걸어 나가는 느낌을 유지한다)
+	--
+	-- 평야에도 100으로 붙여둔다. 그래야 보스방에서 나올 때 자동으로 되돌아온다 —
+	-- OnMapLeave 가 도는지에 기대지 않고, 들어간 맵이 스스로 제 값을 세운다.
+	@MinValue(30)
+	@MaxValue(500)
+	property number ZoomPercent = 100
+
+	@ExecSpace("ClientOnly")
+	method void OnBeginPlay()
+		-- 카메라는 클라이언트 것이다. 서버에서는 건드릴 수 없다.
+		self:ApplyZoom()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnMapEnter(Entity enterEntity)
+		-- 맵 전환으로 들어온 경우. 내 캐릭터가 들어왔을 때만 다시 세운다.
+		if enterEntity ~= _UserService.LocalPlayer then
+			return
+		end
+
+		self:ApplyZoom()
+	end
+
+	@ExecSpace("ClientOnly")
+	method void ApplyZoom()
+		-- 즉시 적용(duration 0). 맵에 막 들어온 참이라 서서히 바꿀 이유가 없다.
+		_CameraService:ZoomTo(self.ZoomPercent, 0)
+		log("MapCameraZoom: " .. self.Entity.Name .. " -> " .. tostring(self.ZoomPercent)
+			.. "% (보이는 폭 약 " .. tostring(math.floor(12.8 * 100 / self.ZoomPercent * 10) / 10) .. " 유닛)")
+	end
+
+end

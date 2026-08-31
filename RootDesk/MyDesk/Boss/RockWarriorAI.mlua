@@ -366,7 +366,17 @@ script RockWarriorAI extends Component
 		self:SetClip(self.HitRUID)
 		self:SetTint(Color(0.6, 0.75, 1, 1))
 		self:SetDamageMultiplier(self.StunDamageMultiplier)
-		log("RockWarrior staggered by " .. cause .. " for " .. tostring(duration) .. "s, damage x" .. tostring(self.StunDamageMultiplier))
+
+		-- 멈춘 x 를 같이 남긴다. 보스방 벽은 ±(10.73 / 9.83) 이므로, 그 근처면 벽에 제대로
+		-- 막힌 것이고 한참 안쪽이면 다른 이유로 멈춘 것이다.
+		local stopX = 0
+		local transform = self.Entity.TransformComponent
+		if isvalid(transform) then
+			stopX = transform.WorldPosition.x
+		end
+
+		log("RockWarrior staggered by " .. cause .. " for " .. tostring(duration) .. "s at x=" .. tostring(stopX)
+			.. " (travelled " .. tostring(self.ChargeTravelled) .. "), damage x" .. tostring(self.StunDamageMultiplier))
 	end
 
 	@ExecSpace("ServerOnly")

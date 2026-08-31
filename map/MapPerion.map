@@ -16,7 +16,7 @@
       {
         "id": "34498ab1-3636-4096-a2d3-eac8eec8998f",
         "path": "/maps/MapPerion",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
         "jsonString": {
           "name": "MapPerion",
           "path": "/maps/MapPerion",
@@ -1103,6 +1103,11 @@
                 ]
               },
               "Enable": true
+            },
+            {
+              "@type": "script.MapCameraZoomComponent",
+              "Enable": true,
+              "ZoomPercent": 100
             }
           ],
           "@version": 1

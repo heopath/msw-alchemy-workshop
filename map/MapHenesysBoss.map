@@ -16,7 +16,7 @@
       {
         "id": "85fa879f-ec15-414c-83c4-2d7d330b8286",
         "path": "/maps/MapHenesysBoss",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
         "jsonString": {
           "name": "MapHenesysBoss",
           "path": "/maps/MapHenesysBoss",
@@ -1103,6 +1103,11 @@
                 ]
               },
               "Enable": true
+            },
+            {
+              "@type": "script.MapCameraZoomComponent",
+              "Enable": true,
+              "ZoomPercent": 60
             }
           ],
           "@version": 1

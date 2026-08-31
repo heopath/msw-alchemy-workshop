@@ -16,7 +16,7 @@
       {
         "id": "a48adf68-4dfc-4379-b0f9-23b45819ee21",
         "path": "/maps/MapPerionBoss",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
         "jsonString": {
           "name": "MapPerionBoss",
           "path": "/maps/MapPerionBoss",
@@ -1103,6 +1103,11 @@
                 ]
               },
               "Enable": true
+            },
+            {
+              "@type": "script.MapCameraZoomComponent",
+              "Enable": true,
+              "ZoomPercent": 60
             }
           ],
           "@version": 1

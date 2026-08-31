@@ -16,7 +16,7 @@
       {
         "id": "385ffa82-8dde-4ffa-8f97-c7958c87c128",
         "path": "/maps/MapHenesys",
-        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent",
+        "componentNames": "MOD.Core.MapComponent,MOD.Core.FootholdComponent,script.MapCameraZoomComponent",
         "jsonString": {
           "name": "MapHenesys",
           "path": "/maps/MapHenesys",
@@ -1103,6 +1103,11 @@
                 ]
               },
               "Enable": true
+            },
+            {
+              "@type": "script.MapCameraZoomComponent",
+              "Enable": true,
+              "ZoomPercent": 100
             }
           ],
           "@version": 1
