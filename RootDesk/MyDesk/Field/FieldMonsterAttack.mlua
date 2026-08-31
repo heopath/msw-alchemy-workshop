@@ -1,0 +1,77 @@
+@Component
+script FieldMonsterAttack extends AttackComponent
+
+	-- Shared contact-damage component for the Henesys field mobs. The three mobs differ
+	-- only by the values stored on their .model, not by having three copies of this script.
+	-- Declared as number (System.Double) so the .model value binds; CalcDamage floors it.
+	@MinValue(0)
+	property number ContactDamage = 5
+
+	@MinValue(0)
+	property number ContactInterval = 0.3
+
+	property Vector2 ContactBoxSize = Vector2(0.6, 0.5)
+
+	property Vector2 ContactBoxOffset = Vector2(0, 0.25)
+
+	@HideFromInspector
+	property any ContactShape = nil
+
+	@HideFromInspector
+	property integer ContactTimerId = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Builds the reusable contact box and starts the damage tick.
+		self.ContactShape = BoxShape(Vector2.zero, self.ContactBoxSize, 0)
+
+		self.ContactTimerId = _TimerService:SetTimerRepeat(function()
+			self:ContactTick()
+		end, self.ContactInterval)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnEndPlay()
+		-- Releases the contact tick timer.
+		if self.ContactTimerId ~= 0 then
+			_TimerService:ClearTimer(self.ContactTimerId)
+			self.ContactTimerId = 0
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void ContactTick()
+		-- Touch damage only; field mobs have no active attack pattern.
+		local monster = self.Entity.Monster
+		if isvalid(monster) and monster.IsDead then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local worldPosition = transform.WorldPosition
+		self.ContactShape.Size = self.ContactBoxSize
+		self.ContactShape.Angle = 0
+		self.ContactShape.Position = Vector2(worldPosition.x + self.ContactBoxOffset.x, worldPosition.y + self.ContactBoxOffset.y)
+
+		self:AttackFast(self.ContactShape, "contact", CollisionGroups.Player)
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- Parent declares no @ExecSpace, so this override must not add one either (LEA-3014).
+		return math.floor(self.ContactDamage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- Only players take contact damage.
+		if isvalid(defender.PlayerComponent) == false then
+			return false
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end

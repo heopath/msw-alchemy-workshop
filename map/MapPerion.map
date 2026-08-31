@@ -6482,7 +6482,7 @@
               "@type": "script.Monster",
               "Enable": true,
               "IsDead": false,
-              "MaxHp": 300,
+              "MaxHp": 1200,
               "RespawnOn": false
             },
             {

@@ -1,0 +1,66 @@
+@Component
+script FieldMonsterHop extends Component
+
+	-- Occasional hop for the slime. AIWanderComponent drives the horizontal wander; this
+	-- only adds a vertical impulse now and then so the mob reads as hopping, not sliding.
+	@MinValue(0)
+	property number MinInterval = 1.5
+
+	@MinValue(0)
+	property number MaxInterval = 3.5
+
+	@MinValue(0)
+	property number HopForce = 1.2
+
+	@HideFromInspector
+	property number HopTimer = 0
+
+	@ExecSpace("ServerOnly")
+	method void OnBeginPlay()
+		-- Randomised first hop so a row of slimes does not bounce in unison.
+		self.HopTimer = self:NextInterval()
+
+		local movement = self.Entity.MovementComponent
+		if isvalid(movement) then
+			movement.JumpForce = self.HopForce
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method number NextInterval()
+		-- Uniform pick between MinInterval and MaxInterval.
+		local span = self.MaxInterval - self.MinInterval
+		if span <= 0 then
+			return self.MinInterval
+		end
+
+		return self.MinInterval + _UtilLogic:RandomDouble() * span
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Hops only while alive and standing on a foothold.
+		local monster = self.Entity.Monster
+		if isvalid(monster) and monster.IsDead then
+			return
+		end
+
+		self.HopTimer = self.HopTimer - delta
+		if self.HopTimer > 0 then
+			return
+		end
+
+		self.HopTimer = self:NextInterval()
+
+		local body = self.Entity.RigidbodyComponent
+		if not isvalid(body) or body:IsOnGround() == false then
+			return
+		end
+
+		local movement = self.Entity.MovementComponent
+		if isvalid(movement) then
+			movement:Jump()
+		end
+	end
+
+end

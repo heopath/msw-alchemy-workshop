@@ -6309,7 +6309,7 @@
                 "z": 0
               },
               "Position": {
-                "x": 0,
+                "x": -8,
                 "y": 0.1,
                 "z": 999.999
               },
@@ -6380,7 +6380,7 @@
             {
               "@type": "MOD.Core.TransformComponent",
               "Position": {
-                "x": 5,
+                "x": 7,
                 "y": 0.4,
                 "z": 999.999
               },
@@ -6480,7 +6480,7 @@
               "@type": "script.Monster",
               "Enable": true,
               "IsDead": false,
-              "MaxHp": 200,
+              "MaxHp": 600,
               "RespawnOn": false
             },
             {
@@ -6509,6 +6509,1870 @@
             "entry_id": "giantmushroom",
             "sub_entity_id": null,
             "root_entity_id": "1f90a7c4-4707-4db3-ba47-50b61cc0797b",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "334f6fa0-c736-498f-a212-28a1a9bfac55",
+        "path": "/maps/MapHenesys/Snail01",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "Snail01",
+          "path": "/maps/MapHenesys/Snail01",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 6,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "snail",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -7,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "2db94405cf0445f5be2b60a02c21dda5",
+                "move": "663faffc64194c08b9371439b1948eb8",
+                "hit": "a3feafdb656943baa3f8897a7042b21f",
+                "die": "a25ed762135448ccb2307604f3179565"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "2db94405cf0445f5be2b60a02c21dda5",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 0.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 40,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 5,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "snail",
+            "sub_entity_id": null,
+            "root_entity_id": "334f6fa0-c736-498f-a212-28a1a9bfac55",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "fa0d45ee-8718-4465-b511-f76a9d530e63",
+        "path": "/maps/MapHenesys/Snail02",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "Snail02",
+          "path": "/maps/MapHenesys/Snail02",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 7,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "snail",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -6,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "2db94405cf0445f5be2b60a02c21dda5",
+                "move": "663faffc64194c08b9371439b1948eb8",
+                "hit": "a3feafdb656943baa3f8897a7042b21f",
+                "die": "a25ed762135448ccb2307604f3179565"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "2db94405cf0445f5be2b60a02c21dda5",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 0.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 40,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 5,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "snail",
+            "sub_entity_id": null,
+            "root_entity_id": "fa0d45ee-8718-4465-b511-f76a9d530e63",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "d59186d6-61fe-4ec9-885d-5d17c3ffc68a",
+        "path": "/maps/MapHenesys/Snail03",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "Snail03",
+          "path": "/maps/MapHenesys/Snail03",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 8,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "snail",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -4.9,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "2db94405cf0445f5be2b60a02c21dda5",
+                "move": "663faffc64194c08b9371439b1948eb8",
+                "hit": "a3feafdb656943baa3f8897a7042b21f",
+                "die": "a25ed762135448ccb2307604f3179565"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "2db94405cf0445f5be2b60a02c21dda5",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 0.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 40,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 5,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "snail",
+            "sub_entity_id": null,
+            "root_entity_id": "d59186d6-61fe-4ec9-885d-5d17c3ffc68a",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "1ca59c28-78e0-4987-9670-ef45f8821cef",
+        "path": "/maps/MapHenesys/OrangeMushroom01",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "OrangeMushroom01",
+          "path": "/maps/MapHenesys/OrangeMushroom01",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 9,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "orangemushroom",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -3.9,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "a95cfed2c8fe4d2cb64cbb62db051f92",
+                "move": "8257566e41aa4234929e81c6c2dab2e4",
+                "hit": "5ebbdaf503964f3e87de155d16650805",
+                "die": "dddbe2f162184ec89add7440da56eb75"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "a95cfed2c8fe4d2cb64cbb62db051f92",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 80,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 8,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "orangemushroom",
+            "sub_entity_id": null,
+            "root_entity_id": "1ca59c28-78e0-4987-9670-ef45f8821cef",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "5ce1d6d3-1c4d-4a0f-97bc-7d601b29bbba",
+        "path": "/maps/MapHenesys/Snail04",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "Snail04",
+          "path": "/maps/MapHenesys/Snail04",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 10,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "snail",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -2.9,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "2db94405cf0445f5be2b60a02c21dda5",
+                "move": "663faffc64194c08b9371439b1948eb8",
+                "hit": "a3feafdb656943baa3f8897a7042b21f",
+                "die": "a25ed762135448ccb2307604f3179565"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "2db94405cf0445f5be2b60a02c21dda5",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 0.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 40,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 5,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.4,
+                "y": 0.28
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.02,
+                "y": 0.14
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "snail",
+            "sub_entity_id": null,
+            "root_entity_id": "5ce1d6d3-1c4d-4a0f-97bc-7d601b29bbba",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "0fcbaf6d-6b04-41ee-aed1-9c4f0bf77a20",
+        "path": "/maps/MapHenesys/GreenSlime01",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
+        "jsonString": {
+          "name": "GreenSlime01",
+          "path": "/maps/MapHenesys/GreenSlime01",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 11,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "greenslime",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -1.9,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "50faf654ee5d479cb2958edce9feaef0",
+                "move": "dc932872543f4a02bf41e977ab79e5ad",
+                "hit": "61c27025a8f14c478f30ede1b49758bc",
+                "die": "31ecb6c7cbc24599881f00cb01599f09"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "50faf654ee5d479cb2958edce9feaef0",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 60,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 6,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              }
+            },
+            {
+              "@type": "script.FieldMonsterHop",
+              "Enable": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "greenslime",
+            "sub_entity_id": null,
+            "root_entity_id": "0fcbaf6d-6b04-41ee-aed1-9c4f0bf77a20",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "058720fd-af88-42c4-a8d7-4134dde67855",
+        "path": "/maps/MapHenesys/OrangeMushroom02",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "OrangeMushroom02",
+          "path": "/maps/MapHenesys/OrangeMushroom02",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 12,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "orangemushroom",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": -0.8,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "a95cfed2c8fe4d2cb64cbb62db051f92",
+                "move": "8257566e41aa4234929e81c6c2dab2e4",
+                "hit": "5ebbdaf503964f3e87de155d16650805",
+                "die": "dddbe2f162184ec89add7440da56eb75"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "a95cfed2c8fe4d2cb64cbb62db051f92",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 80,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 8,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "orangemushroom",
+            "sub_entity_id": null,
+            "root_entity_id": "058720fd-af88-42c4-a8d7-4134dde67855",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "3e8be773-ea98-4eb6-af30-f013fe5c552d",
+        "path": "/maps/MapHenesys/GreenSlime02",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
+        "jsonString": {
+          "name": "GreenSlime02",
+          "path": "/maps/MapHenesys/GreenSlime02",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 13,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "greenslime",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 0.3,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "50faf654ee5d479cb2958edce9feaef0",
+                "move": "dc932872543f4a02bf41e977ab79e5ad",
+                "hit": "61c27025a8f14c478f30ede1b49758bc",
+                "die": "31ecb6c7cbc24599881f00cb01599f09"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "50faf654ee5d479cb2958edce9feaef0",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 60,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 6,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              }
+            },
+            {
+              "@type": "script.FieldMonsterHop",
+              "Enable": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "greenslime",
+            "sub_entity_id": null,
+            "root_entity_id": "3e8be773-ea98-4eb6-af30-f013fe5c552d",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "44bd7c2e-3303-4875-86c0-21a931c295f8",
+        "path": "/maps/MapHenesys/OrangeMushroom03",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "OrangeMushroom03",
+          "path": "/maps/MapHenesys/OrangeMushroom03",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 14,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "orangemushroom",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 1.5,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "a95cfed2c8fe4d2cb64cbb62db051f92",
+                "move": "8257566e41aa4234929e81c6c2dab2e4",
+                "hit": "5ebbdaf503964f3e87de155d16650805",
+                "die": "dddbe2f162184ec89add7440da56eb75"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "a95cfed2c8fe4d2cb64cbb62db051f92",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 80,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 8,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "orangemushroom",
+            "sub_entity_id": null,
+            "root_entity_id": "44bd7c2e-3303-4875-86c0-21a931c295f8",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "db857709-40ea-4011-b2a7-d216ebd5a473",
+        "path": "/maps/MapHenesys/GreenSlime03",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
+        "jsonString": {
+          "name": "GreenSlime03",
+          "path": "/maps/MapHenesys/GreenSlime03",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 15,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "greenslime",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 2.7,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "50faf654ee5d479cb2958edce9feaef0",
+                "move": "dc932872543f4a02bf41e977ab79e5ad",
+                "hit": "61c27025a8f14c478f30ede1b49758bc",
+                "die": "31ecb6c7cbc24599881f00cb01599f09"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "50faf654ee5d479cb2958edce9feaef0",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 60,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 6,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              }
+            },
+            {
+              "@type": "script.FieldMonsterHop",
+              "Enable": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "greenslime",
+            "sub_entity_id": null,
+            "root_entity_id": "db857709-40ea-4011-b2a7-d216ebd5a473",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "f07afff5-1294-47a8-9898-857449d0408d",
+        "path": "/maps/MapHenesys/OrangeMushroom04",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
+        "jsonString": {
+          "name": "OrangeMushroom04",
+          "path": "/maps/MapHenesys/OrangeMushroom04",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 16,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "orangemushroom",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 3.9,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "a95cfed2c8fe4d2cb64cbb62db051f92",
+                "move": "8257566e41aa4234929e81c6c2dab2e4",
+                "hit": "5ebbdaf503964f3e87de155d16650805",
+                "die": "dddbe2f162184ec89add7440da56eb75"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "a95cfed2c8fe4d2cb64cbb62db051f92",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1.5
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 80,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 8,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.64,
+                "y": 0.58
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.29
+              }
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "orangemushroom",
+            "sub_entity_id": null,
+            "root_entity_id": "f07afff5-1294-47a8-9898-857449d0408d",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "541ceda8-d10a-40a3-92f6-fef496fb24c1",
+        "path": "/maps/MapHenesys/GreenSlime04",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
+        "jsonString": {
+          "name": "GreenSlime04",
+          "path": "/maps/MapHenesys/GreenSlime04",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 17,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "greenslime",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 5.1,
+                "y": 0.4,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.StateAnimationComponent",
+              "Enable": true,
+              "ActionSheet": {
+                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
+                "stand": "50faf654ee5d479cb2958edce9feaef0",
+                "move": "dc932872543f4a02bf41e977ab79e5ad",
+                "hit": "61c27025a8f14c478f30ede1b49758bc",
+                "die": "31ecb6c7cbc24599881f00cb01599f09"
+              }
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "50faf654ee5d479cb2958edce9feaef0",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 2,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.RigidbodyComponent",
+              "MoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "RealMoveVelocity": {
+                "x": 0,
+                "y": 0
+              },
+              "Enable": true,
+              "IsBlockVerticalLine": true
+            },
+            {
+              "@type": "MOD.Core.MovementComponent",
+              "Enable": true,
+              "InputSpeed": 1
+            },
+            {
+              "@type": "MOD.Core.StateComponent",
+              "Enable": true,
+              "IsLegacy": false
+            },
+            {
+              "@type": "MOD.Core.AIWanderComponent",
+              "IsLegacy": false,
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.HitComponent",
+              "IsLegacy": false,
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              },
+              "CollisionGroup": {
+                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
+                "Id": "8992acd1e8cd45838db6f10a7b41df09"
+              }
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSpawnerComponent",
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.DamageSkinSettingComponent",
+              "Enable": true
+            },
+            {
+              "@type": "script.Monster",
+              "Enable": true,
+              "IsDead": false,
+              "MaxHp": 60,
+              "RespawnOn": false
+            },
+            {
+              "@type": "script.FieldMonsterAttack",
+              "Enable": true,
+              "ContactDamage": 6,
+              "ContactBoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.65,
+                "y": 0.52
+              },
+              "ContactBoxOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0.05,
+                "y": 0.26
+              }
+            },
+            {
+              "@type": "script.FieldMonsterHop",
+              "Enable": true
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "greenslime",
+            "sub_entity_id": null,
+            "root_entity_id": "541ceda8-d10a-40a3-92f6-fef496fb24c1",
             "replaced_model_id": null
           }
         }
