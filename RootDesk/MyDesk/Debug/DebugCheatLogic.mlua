@@ -1,0 +1,108 @@
+@Logic
+script DebugCheatLogic extends Logic
+
+	-- ⚠ 개발용. 출시 전에 이 파일 하나만 지우면 된다.
+	-- @Logic 은 엔진이 자동 등록하므로 모델에 붙어 있지 않다 — 떼어낼 컴포넌트가 없다.
+	-- 제거 방법: RootDesk/MyDesk/Debug/ 폴더를 지우고 Maker Refresh. 그게 전부다.
+	--
+	-- F9   모든 능력 획득 + 모든 지역 클리어 표시
+	-- F10  능력·클리어 기록 초기화
+	--
+	-- 지역이 늘어도 그대로 동작한다. RegionTable 을 순회하므로 표에 행만 추가하면 된다.
+
+	property string RegionTableName = "RegionTable"
+
+	property any keyHandler = nil
+
+	method void OnBeginPlay()
+		-- 입력은 클라이언트, 상태 변경은 서버. 포털·내려찍기와 같은 형태다.
+		if self:IsClient() then
+			self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+			log("[DEBUG] DebugCheatLogic ready — F9: grant all, F10: reset run")
+		end
+	end
+
+	method void OnEndPlay()
+		-- 입력 구독 해제.
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- F9 / F10 만 본다. 게임 조작(F, M, 방향키)과 겹치지 않는다.
+		if event.key == KeyboardKey.F9 then
+			self:RequestGrantAll()
+			return
+		end
+
+		if event.key == KeyboardKey.F10 then
+			self:RequestResetRun()
+		end
+	end
+
+	method any GetRegionRows()
+		-- RegionTable 전체 행. 없으면 nil.
+		local dataTable = _DataService:GetTable(self.RegionTableName)
+		if dataTable == nil then
+			log_error("[DEBUG] UserDataSet '" .. self.RegionTableName .. "' not found")
+			return nil
+		end
+
+		return dataTable:GetAllRow()
+	end
+
+	@ExecSpace("Server")
+	method void RequestGrantAll()
+		-- 각 지역을 클리어한 것으로 처리한다. 능력 지급은 ReportBossDefeated 가 이미 하는 일이라
+		-- 그대로 재사용한다 — 검증된 경로를 쓰고 디버그용 분기를 따로 만들지 않는다.
+		local rows = self:GetRegionRows()
+		if rows == nil then
+			return
+		end
+
+		local granted = ""
+		local count = 0
+
+		for _, row in pairs(rows) do
+			local regionId = row:GetItem("regionId")
+			if regionId ~= nil and regionId ~= "" then
+				_AbilityLogic:ReportBossDefeated(regionId)
+				count = count + 1
+				if granted == "" then
+					granted = regionId
+				else
+					granted = granted .. ", " .. regionId
+				end
+			end
+		end
+
+		log("[DEBUG] granted all abilities and cleared " .. tostring(count) .. " region(s): " .. granted)
+	end
+
+	@ExecSpace("Server")
+	method void RequestResetRun()
+		-- ResetRun 은 AbilityTable 을 순회하므로, 능력이 없는 지역(페리온)의 클리어 표시는
+		-- 거기서 지워지지 않는다. RegionTable 쪽을 한 번 더 훑어서 마저 비운다.
+		_AbilityLogic:ResetRun()
+
+		local rows = self:GetRegionRows()
+		if rows == nil then
+			return
+		end
+
+		local count = 0
+		for _, row in pairs(rows) do
+			local regionId = row:GetItem("regionId")
+			if regionId ~= nil and regionId ~= "" then
+				_AbilityLogic.ClearedRegions[regionId] = false
+				count = count + 1
+			end
+		end
+
+		log("[DEBUG] reset run — abilities dropped, " .. tostring(count) .. " region(s) marked uncleared")
+	end
+
+end
