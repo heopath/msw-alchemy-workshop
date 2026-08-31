@@ -1,7 +1,7 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "model://snail",
+  "EntryKey": "model://fireboar",
   "ContentType": "x-mod/model",
   "Content": "",
   "Usage": 0,
@@ -14,9 +14,9 @@
     "Use": "Json",
     "Json": {
       "Version": 1,
-      "Name": "Snail",
+      "Name": "FireBoar",
       "BaseModelId": null,
-      "Id": "snail",
+      "Id": "fireboar",
       "Components": [
         "MOD.Core.TransformComponent",
         "MOD.Core.StateAnimationComponent",
@@ -40,7 +40,7 @@
             "$type": "MODNativeType",
             "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": "2db94405cf0445f5be2b60a02c21dda5"
+          "Value": "f19b0f0fe6374743a4595b2afade65ef"
         },
         {
           "TargetType": "MOD.Core.SpriteRendererComponent",
@@ -69,10 +69,10 @@
           },
           "Value": {
             "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
-            "stand": "2db94405cf0445f5be2b60a02c21dda5",
-            "move": "663faffc64194c08b9371439b1948eb8",
-            "hit": "a3feafdb656943baa3f8897a7042b21f",
-            "die": "a25ed762135448ccb2307604f3179565"
+            "stand": "f19b0f0fe6374743a4595b2afade65ef",
+            "move": "0c3aa404dad74311ae193b81250cacc0",
+            "hit": "cccfa2a431a347ffa79e2ec9a94a8853",
+            "die": "51e8a19e4ea44efdb15acf7b1da34917"
           }
         },
         {
@@ -102,8 +102,8 @@
           },
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
-            "x": 0.4,
-            "y": 0.28
+            "x": 0.56,
+            "y": 0.43
           }
         },
         {
@@ -115,8 +115,8 @@
           },
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
-            "x": 0.02,
-            "y": 0.14
+            "x": -0.02,
+            "y": 0.215
           }
         },
         {
@@ -147,7 +147,7 @@
             "$type": "MODNativeType",
             "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 0.5
+          "Value": 1.5
         },
         {
           "TargetType": "MOD.Core.RigidbodyComponent",
@@ -165,7 +165,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 40.0
+          "Value": 100.0
         },
         {
           "TargetType": "script.Monster",
@@ -183,7 +183,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 5.0
+          "Value": 10.0
         },
         {
           "TargetType": "script.FieldMonsterAttack",
@@ -194,7 +194,7 @@
           },
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
-            "x": 0.4,
+            "x": 0.56,
             "y": 1.42
           }
         },
@@ -207,7 +207,7 @@
           },
           "Value": {
             "$type": "MOD.Core.MODVector2, MOD.Core",
-            "x": 0.02,
+            "x": -0.02,
             "y": 0.71
           }
         },

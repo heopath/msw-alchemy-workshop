@@ -7,8 +7,8 @@
   "Usage": 0,
   "UsePublish": 1,
   "UseService": 0,
-  "CoreVersion": "",
-  "StudioVersion": "",
+  "CoreVersion": "26.7.0.0",
+  "StudioVersion": "0.1.0.0",
   "DynamicLoading": 0,
   "ContentProto": {
     "Use": "Json",
@@ -148,7 +148,7 @@
             "$type": "MODNativeType",
             "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 1
+          "Value": 1.0
         },
         {
           "TargetType": "MOD.Core.RigidbodyComponent",
@@ -166,7 +166,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 60
+          "Value": 60.0
         },
         {
           "TargetType": "script.Monster",
@@ -184,7 +184,7 @@
             "$type": "MODNativeType",
             "type": "System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
           },
-          "Value": 6
+          "Value": 6.0
         },
         {
           "TargetType": "script.FieldMonsterAttack",
