@@ -13434,170 +13434,6 @@
         }
       },
       {
-        "id": "1f90a7c4-4707-4db3-ba47-50b61cc0797b",
-        "path": "/maps/MapHenesys/GiantMushroom01",
-        "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.GiantMushroomAI,script.GiantMushroomAttack",
-        "jsonString": {
-          "name": "GiantMushroom01",
-          "path": "/maps/MapHenesys/GiantMushroom01",
-          "nameEditable": true,
-          "enable": true,
-          "visible": true,
-          "localize": false,
-          "displayOrder": 4,
-          "pathConstraints": "///",
-          "revision": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "giantmushroom",
-            "sub_entity_id": null,
-            "root_entity_id": "1f90a7c4-4707-4db3-ba47-50b61cc0797b",
-            "replaced_model_id": null
-          },
-          "modelId": "giantmushroom",
-          "@components": [
-            {
-              "@type": "MOD.Core.TransformComponent",
-              "Rotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0
-              },
-              "Position": {
-                "x": 18,
-                "y": 0.4,
-                "z": 999.999
-              },
-              "QuaternionRotation": {
-                "x": 0,
-                "y": 0,
-                "z": 0,
-                "w": 1
-              },
-              "Scale": {
-                "x": 1,
-                "y": 1,
-                "z": 1
-              },
-              "ZRotation": 0,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.StateAnimationComponent",
-              "ActionSheet": {
-                "stand": "6f64634a61134b6eb6da027b642a959a",
-                "move": "e2d332898b9c441fb66bff05ed7ea975",
-                "attack": "16a02ec8b3094ed6bbea2595976a083a",
-                "hit": "f56d02a759394994ac1218cda2c65898",
-                "die": "a4ecfa0cc1544a6087d176a45b8293a3"
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.SpriteRendererComponent",
-              "ActionSheet": {},
-              "DrawMode": 0,
-              "EndFrameIndex": 2147483647,
-              "FlipX": false,
-              "FlipY": false,
-              "OrderInLayer": 2,
-              "PlayRate": 1,
-              "RenderSetting": 0,
-              "SortingLayer": "MapLayer0",
-              "SpriteRUID": "6f64634a61134b6eb6da027b642a959a",
-              "StartFrameIndex": 0,
-              "Color": {
-                "r": 1,
-                "g": 1,
-                "b": 1,
-                "a": 1
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.RigidbodyComponent",
-              "MoveVelocity": {
-                "x": 0,
-                "y": 0
-              },
-              "RealMoveVelocity": {
-                "x": 0,
-                "y": 0
-              },
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.MovementComponent",
-              "InputSpeed": 1,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.StateComponent",
-              "IsLegacy": true,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.HitComponent",
-              "BoxSize": {
-                "x": 1.65,
-                "y": 1.08
-              },
-              "ColliderOffset": {
-                "x": -0.1,
-                "y": 0.54
-              },
-              "CollisionGroup": {
-                "Id": "8992acd1e8cd45838db6f10a7b41df09"
-              },
-              "IsLegacy": false,
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.DamageSkinSpawnerComponent",
-              "Enable": true
-            },
-            {
-              "@type": "MOD.Core.DamageSkinSettingComponent",
-              "Enable": true
-            },
-            {
-              "@type": "script.Monster",
-              "Enable": true,
-              "MaxHp": 600,
-              "RespawnOn": false,
-              "IsDead": false
-            },
-            {
-              "@type": "script.GiantMushroomAI",
-              "Enable": true,
-              "StandRUID": "6f64634a61134b6eb6da027b642a959a",
-              "StompRUID": "16a02ec8b3094ed6bbea2595976a083a",
-              "SporeRUID": "1763c25f69df4a11a6e76cfcf6dbe374",
-              "DieRUID": "a4ecfa0cc1544a6087d176a45b8293a3",
-              "SporeModelId": "sporeshot",
-              "RegionName": "Henesys",
-              "StompInterval": 3,
-              "StompIntervalPhase2": 2,
-              "SporeInterval": 5,
-              "StompTelegraph": 0.5,
-              "AIState": "WAIT",
-              "StateTimer": 0,
-              "NextPattern": "STOMP",
-              "Phase2": false,
-              "DeathPlayed": false,
-              "SporeSeq": 0
-            },
-            {
-              "@type": "script.GiantMushroomAttack",
-              "Enable": true,
-              "StompRadius": 2.5,
-              "ContactTimerId": 0
-            }
-          ],
-          "@version": 1
-        }
-      },
-      {
         "id": "6cbe8a05-c397-4c70-aa09-e0a9e1947320",
         "path": "/maps/MapHenesys/Snail01",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
@@ -15303,6 +15139,95 @@
             "entry_id": "greenslime",
             "sub_entity_id": null,
             "root_entity_id": "5826106a-b68a-454c-ab56-2b5f9cd7990a",
+            "replaced_model_id": null
+          }
+        }
+      },
+      {
+        "id": "ceffd823-2ae1-4ae0-913d-5e56e9508dbe",
+        "path": "/maps/MapHenesys/PortalToBoss",
+        "componentNames": "MOD.Core.TransformComponent,MOD.Core.SpriteRendererComponent,MOD.Core.TriggerComponent,script.PortalComponent",
+        "jsonString": {
+          "name": "PortalToBoss",
+          "path": "/maps/MapHenesys/PortalToBoss",
+          "nameEditable": true,
+          "enable": true,
+          "visible": true,
+          "localize": false,
+          "displayOrder": 28,
+          "pathConstraints": "///",
+          "revision": 1,
+          "modelId": "portal",
+          "@components": [
+            {
+              "@type": "MOD.Core.TransformComponent",
+              "Position": {
+                "x": 18.8,
+                "y": 0.1,
+                "z": 999.999
+              },
+              "QuaternionRotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+              },
+              "Scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "Enable": true
+            },
+            {
+              "@type": "MOD.Core.SpriteRendererComponent",
+              "SpriteRUID": "cd356e8cb0194862a1f85b248d0561d3",
+              "Color": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1
+              },
+              "DrawMode": 0,
+              "FlipX": false,
+              "FlipY": false,
+              "PlayRate": 1,
+              "OrderInLayer": 3,
+              "StartFrameIndex": 0,
+              "EndFrameIndex": 2147483647,
+              "Enable": true,
+              "SortingLayer": "MapLayer0"
+            },
+            {
+              "@type": "MOD.Core.TriggerComponent",
+              "Enable": true,
+              "BoxSize": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 1,
+                "y": 2.2
+              },
+              "ColliderOffset": {
+                "$type": "MOD.Core.MODVector2, MOD.Core",
+                "x": 0,
+                "y": 1.1
+              },
+              "IsLegacy": false,
+              "IsPassive": false
+            },
+            {
+              "@type": "script.PortalComponent",
+              "Enable": true,
+              "TargetMapName": "MapHenesysBoss",
+              "TargetX": -7.5,
+              "TargetY": 0.4
+            }
+          ],
+          "@version": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "portal",
+            "sub_entity_id": null,
+            "root_entity_id": "ceffd823-2ae1-4ae0-913d-5e56e9508dbe",
             "replaced_model_id": null
           }
         }

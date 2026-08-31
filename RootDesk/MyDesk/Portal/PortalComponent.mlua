@@ -1,0 +1,138 @@
+@Component
+script PortalComponent extends Component
+
+	-- Map-to-map doorway. Placed on a world entity (not UI), so this component can hold both
+	-- the client-side key handling and the server-side teleport.
+	property string TargetMapName = ""
+
+	property number TargetX = 0
+
+	property number TargetY = 0.4
+
+	-- Up-arrow works from this far away; the server re-checks it so the client cannot cheat range.
+	@MinValue(0)
+	property number InteractRange = 1.5
+
+	property boolean AutoEnter = true
+
+	-- The destination map's return portal must not fire the instant the player lands.
+	-- Arrival points are also placed 2+ units away from the opposite portal.
+	@MinValue(0)
+	property number ArmDelay = 1.0
+
+	@HideFromInspector
+	property number ArmTimer = 0
+
+	property any triggerHandler = nil
+
+	property any keyHandler = nil
+
+	method void OnBeginPlay()
+		-- Server owns the trigger and the teleport; client owns the up-arrow input.
+		if self:IsServer() then
+			self.ArmTimer = self.ArmDelay
+			self.triggerHandler = self.Entity:ConnectEvent(TriggerEnterEvent, self.OnTriggerEnter)
+			log("Portal ready on " .. self.Entity.Name .. " -> " .. self.TargetMapName .. " (" .. tostring(self.TargetX) .. ", " .. tostring(self.TargetY) .. ")")
+		end
+
+		if self:IsClient() then
+			self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		end
+	end
+
+	method void OnEndPlay()
+		-- Releases both subscriptions.
+		if self.triggerHandler ~= nil then
+			self.Entity:DisconnectEvent(TriggerEnterEvent, self.triggerHandler)
+			self.triggerHandler = nil
+		end
+
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Counts down the arm delay. Nothing else runs per frame.
+		if self.ArmTimer > 0 then
+			self.ArmTimer = self.ArmTimer - delta
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnTriggerEnter(TriggerEnterEvent event)
+		-- Walking into the portal is enough, once the portal has armed.
+		if self.AutoEnter == false then
+			return
+		end
+
+		if self.ArmTimer > 0 then
+			return
+		end
+
+		local other = event.TriggerBodyEntity
+		if not isvalid(other) then
+			return
+		end
+
+		if not isvalid(other.PlayerComponent) then
+			return
+		end
+
+		self:Teleport(other)
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- Up arrow is the MapleStory convention for entering a portal.
+		if event.key ~= KeyboardKey.UpArrow then
+			return
+		end
+
+		self:RequestEnter()
+	end
+
+	@ExecSpace("Server")
+	method void RequestEnter()
+		-- Range is re-checked server-side; the client only asks.
+		local player = _UserService:GetUserEntityByUserId(senderUserId)
+		if not isvalid(player) then
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local myPosition = transform.WorldPosition
+		local playerPosition = player.TransformComponent.WorldPosition
+		local dx = playerPosition.x - myPosition.x
+		local dy = playerPosition.y - myPosition.y
+
+		if math.sqrt(dx * dx + dy * dy) > self.InteractRange then
+			return
+		end
+
+		self:Teleport(player)
+	end
+
+	@ExecSpace("ServerOnly")
+	method void Teleport(Entity player)
+		-- Same call the region select screen uses.
+		if self.TargetMapName == "" then
+			log_error("Portal " .. self.Entity.Name .. " has no TargetMapName")
+			return
+		end
+
+		if player.CurrentMapName == self.TargetMapName then
+			return
+		end
+
+		_TeleportService:TeleportToMapPosition(player, Vector3(self.TargetX, self.TargetY, 0), self.TargetMapName)
+		log("Portal " .. self.Entity.Name .. " moved " .. player.Name .. " to " .. self.TargetMapName)
+	end
+
+end
