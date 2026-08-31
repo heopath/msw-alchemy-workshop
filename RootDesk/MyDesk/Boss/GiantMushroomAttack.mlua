@@ -102,6 +102,17 @@ script GiantMushroomAttack extends AttackComponent
 			return false
 		end
 
+		-- The stomp is a shockwave through the ground, so a player in the air rides over it.
+		-- Same rule as RockWarrior's charge — being airborne is a real defensive option, which
+		-- is what makes the spore pad useful for evasion and not only for height.
+		-- Body contact and the spore projectiles are deliberately NOT gated this way.
+		if attackInfo == "stomp" then
+			local rb = defender.RigidbodyComponent
+			if rb == nil or rb:IsOnGround() == false then
+				return false
+			end
+		end
+
 		return __base:IsAttackTarget(defender, attackInfo)
 	end
 

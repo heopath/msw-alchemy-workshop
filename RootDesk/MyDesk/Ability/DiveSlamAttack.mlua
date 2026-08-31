@@ -1,0 +1,213 @@
+@Component
+script DiveSlamAttack extends AttackComponent
+
+	-- Spore-pad attack mode. Bounce high, then dive: the landing deals area damage scaled by
+	-- how far the dive fell. Attached to the player, which is a world entity, so this one
+	-- component can hold both the client-side key handling and the server-side judgement.
+	--
+	-- Numbers come from the AbilityTable row (AbilityLogic pushes them in), not from here.
+	@MinValue(0)
+	property number BaseDamage = 30
+
+	@MinValue(0)
+	property number DamagePerUnit = 10
+
+	@MinValue(0)
+	property number MaxDamage = 80
+
+	@MinValue(0)
+	property number Radius = 1.5
+
+	-- Downward force applied every frame while diving, so the descent reads as a slam.
+	@MinValue(0)
+	property number DiveSpeed = 12
+
+	-- Below this fall distance the dive still lands but adds no height bonus.
+	@MinValue(0)
+	property number MinFallDistance = 0.5
+
+	-- Gate: the dive is part of the spore pad ability, so it needs the ability.
+	property string RequiredAbility = "SporePad"
+
+	@HideFromInspector
+	property boolean Diving = false
+
+	@HideFromInspector
+	property number DiveStartY = 0
+
+	property any keyHandler = nil
+
+	method void OnBeginPlay()
+		-- Client owns the key; server owns the dive state and the damage.
+		if self:IsClient() then
+			self.keyHandler = _InputService:ConnectEvent(KeyDownEvent, self.OnKeyDown)
+		end
+
+		if self:IsServer() then
+			self.Diving = false
+			self:LoadTuning()
+		end
+	end
+
+	@ExecSpace("ServerOnly")
+	method void LoadTuning()
+		-- Pulls the numbers from the AbilityTable row rather than having them pushed in, so a
+		-- player who joins at any time is configured correctly. Property defaults are the
+		-- fallback when the row or a column is missing.
+		local row = _AbilityLogic:FindAbilityRow(self.RequiredAbility)
+		if row == nil then
+			log_warning("DiveSlamAttack: no AbilityTable row for '" .. self.RequiredAbility .. "', using script defaults")
+			return
+		end
+
+		self.BaseDamage = _AbilityLogic:ReadNumber(row, "diveBaseDamage", self.BaseDamage)
+		self.DamagePerUnit = _AbilityLogic:ReadNumber(row, "diveDamagePerUnit", self.DamagePerUnit)
+		self.MaxDamage = _AbilityLogic:ReadNumber(row, "diveMaxDamage", self.MaxDamage)
+		self.Radius = _AbilityLogic:ReadNumber(row, "diveRadius", self.Radius)
+		self.DiveSpeed = _AbilityLogic:ReadNumber(row, "diveSpeed", self.DiveSpeed)
+		self.MinFallDistance = _AbilityLogic:ReadNumber(row, "diveMinFall", self.MinFallDistance)
+
+		log("DiveSlamAttack tuning: base=" .. tostring(self.BaseDamage)
+			.. " perUnit=" .. tostring(self.DamagePerUnit)
+			.. " max=" .. tostring(self.MaxDamage)
+			.. " radius=" .. tostring(self.Radius)
+			.. " diveSpeed=" .. tostring(self.DiveSpeed))
+	end
+
+	method void OnEndPlay()
+		-- Releases the input subscription.
+		if self.keyHandler ~= nil then
+			_InputService:DisconnectEvent(KeyDownEvent, self.keyHandler)
+			self.keyHandler = nil
+		end
+	end
+
+	@ExecSpace("ClientOnly")
+	method void OnKeyDown(KeyDownEvent event)
+		-- Down arrow, but only this player's own avatar reacts.
+		if event.key ~= KeyboardKey.DownArrow then
+			return
+		end
+
+		if self.Entity ~= _UserService.LocalPlayer then
+			return
+		end
+
+		self:RequestDive()
+	end
+
+	@ExecSpace("Server")
+	method void RequestDive()
+		-- The server decides whether a dive may start. Grounded input is left alone so the
+		-- default crouch / down-jump behaviour is untouched.
+		if self.Diving then
+			return
+		end
+
+		if _AbilityLogic:HasAbility(self.RequiredAbility) == false then
+			log("DiveSlam refused: ability '" .. self.RequiredAbility .. "' not owned")
+			return
+		end
+
+		local rb = self.Entity.RigidbodyComponent
+		if rb == nil then
+			return
+		end
+
+		if rb:IsOnGround() then
+			-- On the ground the down arrow keeps its normal meaning.
+			return
+		end
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		self.Diving = true
+		self.DiveStartY = transform.WorldPosition.y
+		log("DiveSlam started at y=" .. tostring(self.DiveStartY))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void OnUpdate(number delta)
+		-- Drives the descent and watches for the landing frame.
+		if self.Diving == false then
+			return
+		end
+
+		local rb = self.Entity.RigidbodyComponent
+		if rb == nil then
+			self.Diving = false
+			return
+		end
+
+		if rb:IsOnGround() then
+			self:Land()
+			return
+		end
+
+		-- Straight down, faster than gravity alone.
+		rb:SetForce(Vector2(0, -self.DiveSpeed))
+	end
+
+	@ExecSpace("ServerOnly")
+	method void Land()
+		-- Landing frame: fall distance decides the damage, then one circular hit.
+		self.Diving = false
+
+		local transform = self.Entity.TransformComponent
+		if not isvalid(transform) then
+			return
+		end
+
+		local landingPosition = transform.WorldPosition
+		local fallDistance = self.DiveStartY - landingPosition.y
+		if fallDistance < 0 then
+			fallDistance = 0
+		end
+
+		local bonus = 0
+		if fallDistance >= self.MinFallDistance then
+			bonus = fallDistance * self.DamagePerUnit
+		end
+
+		local damage = self.BaseDamage + bonus
+		if damage > self.MaxDamage then
+			damage = self.MaxDamage
+		end
+
+		-- Stashed so CalcDamage can report it; CalcDamage takes no extra arguments.
+		self._T.slamDamage = damage
+
+		self:AttackFast(CircleShape(Vector2(landingPosition.x, landingPosition.y), self.Radius), "diveslam", CollisionGroups.Monster)
+
+		log("DiveSlam landed: fall=" .. tostring(fallDistance)
+			.. " damage=" .. tostring(math.floor(damage))
+			.. " (base " .. tostring(self.BaseDamage) .. " + " .. tostring(bonus) .. ", max " .. tostring(self.MaxDamage) .. ")"
+			.. " radius=" .. tostring(self.Radius))
+	end
+
+	method integer CalcDamage(Entity attacker, Entity defender, string attackInfo)
+		-- Parent declares no @ExecSpace, so this override must not add one either (LEA-3014).
+		if attackInfo ~= "diveslam" then
+			return 0
+		end
+
+		if self._T.slamDamage == nil then
+			return math.floor(self.BaseDamage)
+		end
+
+		return math.floor(self._T.slamDamage)
+	end
+
+	method boolean IsAttackTarget(Entity defender, string attackInfo)
+		-- Monsters only. Players never hit each other with this.
+		if isvalid(defender.PlayerComponent) then
+			return false
+		end
+
+		return __base:IsAttackTarget(defender, attackInfo)
+	end
+
+end
