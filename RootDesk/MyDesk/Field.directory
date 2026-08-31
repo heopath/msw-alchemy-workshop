@@ -1,20 +1,20 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "directory://78a134aa41744980a3942a44cf172fc0",
+  "EntryKey": "directory://35847d45620c422090f100ab516810cb",
   "ContentType": "x-mod/directory",
   "Content": "",
   "Usage": 0,
   "UsePublish": 1,
   "UseService": 0,
   "CoreVersion": "26.7.0.0",
-  "StudioVersion": "0.1.0.0",
+  "StudioVersion": "",
   "DynamicLoading": 0,
   "ContentProto": {
     "Use": "Json",
     "Json": {
-      "entry_id": "directory://78a134aa41744980a3942a44cf172fc0",
-      "name": "SporePad",
+      "entry_id": "directory://35847d45620c422090f100ab516810cb",
+      "name": "Field",
       "lock": false,
       "folding": false,
       "nameEditable": true

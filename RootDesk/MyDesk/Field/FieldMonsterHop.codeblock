@@ -1,14 +1,14 @@
 {
   "Id": "",
   "GameId": "",
-  "EntryKey": "codeblock://83dd2504-2948-4bbc-b6cb-93b9f059f609",
+  "EntryKey": "codeblock://10c95149-d58a-41db-8893-a52d6e870b50",
   "ContentType": "x-mod/codeblock",
   "Content": "",
   "Usage": 0,
   "UsePublish": 1,
   "UseService": 0,
   "CoreVersion": "26.7.0.0",
-  "StudioVersion": "0.1.0.0",
+  "StudioVersion": "",
   "DynamicLoading": 0,
   "ContentProto": {
     "Use": "Json",
@@ -22,10 +22,10 @@
         "Minor": 1
       },
       "Description": "",
-      "Id": "83dd2504-2948-4bbc-b6cb-93b9f059f609",
+      "Id": "10c95149-d58a-41db-8893-a52d6e870b50",
       "Language": 1,
-      "Name": "AbilityLogic",
-      "Type": 5,
+      "Name": "FieldMonsterHop",
+      "Type": 1,
       "Source": 0,
       "Target": null
     }

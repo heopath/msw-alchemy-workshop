@@ -6372,13 +6372,25 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 5,
+          "displayOrder": 4,
           "pathConstraints": "///",
           "revision": 1,
+          "origin": {
+            "type": "Model",
+            "entry_id": "giantmushroom",
+            "sub_entity_id": null,
+            "root_entity_id": "1f90a7c4-4707-4db3-ba47-50b61cc0797b",
+            "replaced_model_id": null
+          },
           "modelId": "giantmushroom",
           "@components": [
             {
               "@type": "MOD.Core.TransformComponent",
+              "Rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
               "Position": {
                 "x": 7,
                 "y": 0.4,
@@ -6395,38 +6407,40 @@
                 "y": 1,
                 "z": 1
               },
+              "ZRotation": 0,
               "Enable": true
             },
             {
               "@type": "MOD.Core.StateAnimationComponent",
-              "Enable": true,
               "ActionSheet": {
-                "$type": "MOD.Core.MODSyncDictionary`2[[System.String, mscorlib],[System.String, mscorlib]], MOD.Core",
                 "stand": "6f64634a61134b6eb6da027b642a959a",
                 "move": "e2d332898b9c441fb66bff05ed7ea975",
                 "attack": "16a02ec8b3094ed6bbea2595976a083a",
                 "hit": "f56d02a759394994ac1218cda2c65898",
                 "die": "a4ecfa0cc1544a6087d176a45b8293a3"
-              }
+              },
+              "Enable": true
             },
             {
               "@type": "MOD.Core.SpriteRendererComponent",
+              "ActionSheet": {},
+              "DrawMode": 0,
+              "EndFrameIndex": 2147483647,
+              "FlipX": false,
+              "FlipY": false,
+              "OrderInLayer": 2,
+              "PlayRate": 1,
+              "RenderSetting": 0,
+              "SortingLayer": "MapLayer0",
               "SpriteRUID": "6f64634a61134b6eb6da027b642a959a",
+              "StartFrameIndex": 0,
               "Color": {
                 "r": 1,
                 "g": 1,
                 "b": 1,
                 "a": 1
               },
-              "DrawMode": 0,
-              "FlipX": false,
-              "FlipY": false,
-              "PlayRate": 1,
-              "OrderInLayer": 2,
-              "StartFrameIndex": 0,
-              "EndFrameIndex": 2147483647,
-              "Enable": true,
-              "SortingLayer": "MapLayer0"
+              "Enable": true
             },
             {
               "@type": "MOD.Core.RigidbodyComponent",
@@ -6442,31 +6456,29 @@
             },
             {
               "@type": "MOD.Core.MovementComponent",
-              "Enable": true,
-              "InputSpeed": 1
+              "InputSpeed": 1,
+              "Enable": true
             },
             {
               "@type": "MOD.Core.StateComponent",
+              "IsLegacy": true,
               "Enable": true
             },
             {
               "@type": "MOD.Core.HitComponent",
-              "IsLegacy": false,
-              "Enable": true,
               "BoxSize": {
-                "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": 1.65,
                 "y": 1.08
               },
               "ColliderOffset": {
-                "$type": "MOD.Core.MODVector2, MOD.Core",
                 "x": -0.1,
                 "y": 0.54
               },
               "CollisionGroup": {
-                "$type": "MOD.Core.Physics.CollisionGroup, MOD.Core",
                 "Id": "8992acd1e8cd45838db6f10a7b41df09"
-              }
+              },
+              "IsLegacy": false,
+              "Enable": true
             },
             {
               "@type": "MOD.Core.DamageSkinSpawnerComponent",
@@ -6479,9 +6491,9 @@
             {
               "@type": "script.Monster",
               "Enable": true,
-              "IsDead": false,
               "MaxHp": 600,
-              "RespawnOn": false
+              "RespawnOn": false,
+              "IsDead": false
             },
             {
               "@type": "script.GiantMushroomAI",
@@ -6495,26 +6507,26 @@
               "StompInterval": 3,
               "StompIntervalPhase2": 2,
               "SporeInterval": 5,
-              "StompTelegraph": 0.5
+              "StompTelegraph": 0.5,
+              "AIState": "WAIT",
+              "StateTimer": 0,
+              "NextPattern": "STOMP",
+              "Phase2": false,
+              "DeathPlayed": false,
+              "SporeSeq": 0
             },
             {
               "@type": "script.GiantMushroomAttack",
               "Enable": true,
-              "StompRadius": 2.5
+              "StompRadius": 2.5,
+              "ContactTimerId": 0
             }
           ],
-          "@version": 1,
-          "origin": {
-            "type": "Model",
-            "entry_id": "giantmushroom",
-            "sub_entity_id": null,
-            "root_entity_id": "1f90a7c4-4707-4db3-ba47-50b61cc0797b",
-            "replaced_model_id": null
-          }
+          "@version": 1
         }
       },
       {
-        "id": "334f6fa0-c736-498f-a212-28a1a9bfac55",
+        "id": "cc1deda3-ad8c-4fc1-8467-62d13e49f217",
         "path": "/maps/MapHenesys/Snail01",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -6524,7 +6536,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 6,
+          "displayOrder": 5,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "snail",
@@ -6662,13 +6674,13 @@
             "type": "Model",
             "entry_id": "snail",
             "sub_entity_id": null,
-            "root_entity_id": "334f6fa0-c736-498f-a212-28a1a9bfac55",
+            "root_entity_id": "cc1deda3-ad8c-4fc1-8467-62d13e49f217",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "fa0d45ee-8718-4465-b511-f76a9d530e63",
+        "id": "0b25562e-c9e4-41aa-ac72-549c165fc46b",
         "path": "/maps/MapHenesys/Snail02",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -6678,7 +6690,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 7,
+          "displayOrder": 6,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "snail",
@@ -6816,13 +6828,13 @@
             "type": "Model",
             "entry_id": "snail",
             "sub_entity_id": null,
-            "root_entity_id": "fa0d45ee-8718-4465-b511-f76a9d530e63",
+            "root_entity_id": "0b25562e-c9e4-41aa-ac72-549c165fc46b",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "d59186d6-61fe-4ec9-885d-5d17c3ffc68a",
+        "id": "adc1a338-a6ba-4bb6-bd4a-6f2b758223f3",
         "path": "/maps/MapHenesys/Snail03",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -6832,7 +6844,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 8,
+          "displayOrder": 7,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "snail",
@@ -6970,13 +6982,13 @@
             "type": "Model",
             "entry_id": "snail",
             "sub_entity_id": null,
-            "root_entity_id": "d59186d6-61fe-4ec9-885d-5d17c3ffc68a",
+            "root_entity_id": "adc1a338-a6ba-4bb6-bd4a-6f2b758223f3",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "1ca59c28-78e0-4987-9670-ef45f8821cef",
+        "id": "f8b8fc0a-7f66-4e2d-b737-dc289f385640",
         "path": "/maps/MapHenesys/OrangeMushroom01",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -6986,7 +6998,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 9,
+          "displayOrder": 8,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "orangemushroom",
@@ -7124,13 +7136,13 @@
             "type": "Model",
             "entry_id": "orangemushroom",
             "sub_entity_id": null,
-            "root_entity_id": "1ca59c28-78e0-4987-9670-ef45f8821cef",
+            "root_entity_id": "f8b8fc0a-7f66-4e2d-b737-dc289f385640",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "5ce1d6d3-1c4d-4a0f-97bc-7d601b29bbba",
+        "id": "388c25b9-9f7f-4955-8aba-822b5b03d63b",
         "path": "/maps/MapHenesys/Snail04",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -7140,7 +7152,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 10,
+          "displayOrder": 9,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "snail",
@@ -7278,13 +7290,13 @@
             "type": "Model",
             "entry_id": "snail",
             "sub_entity_id": null,
-            "root_entity_id": "5ce1d6d3-1c4d-4a0f-97bc-7d601b29bbba",
+            "root_entity_id": "388c25b9-9f7f-4955-8aba-822b5b03d63b",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "0fcbaf6d-6b04-41ee-aed1-9c4f0bf77a20",
+        "id": "8df6ef4f-3ed2-4b35-aff9-cd7183df8701",
         "path": "/maps/MapHenesys/GreenSlime01",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
         "jsonString": {
@@ -7294,7 +7306,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 11,
+          "displayOrder": 10,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "greenslime",
@@ -7436,13 +7448,13 @@
             "type": "Model",
             "entry_id": "greenslime",
             "sub_entity_id": null,
-            "root_entity_id": "0fcbaf6d-6b04-41ee-aed1-9c4f0bf77a20",
+            "root_entity_id": "8df6ef4f-3ed2-4b35-aff9-cd7183df8701",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "058720fd-af88-42c4-a8d7-4134dde67855",
+        "id": "afb0b220-a736-4db5-8703-b94a17624f25",
         "path": "/maps/MapHenesys/OrangeMushroom02",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -7452,7 +7464,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 12,
+          "displayOrder": 11,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "orangemushroom",
@@ -7590,13 +7602,13 @@
             "type": "Model",
             "entry_id": "orangemushroom",
             "sub_entity_id": null,
-            "root_entity_id": "058720fd-af88-42c4-a8d7-4134dde67855",
+            "root_entity_id": "afb0b220-a736-4db5-8703-b94a17624f25",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "3e8be773-ea98-4eb6-af30-f013fe5c552d",
+        "id": "2ac5f406-e280-48a3-a8f7-f58021e065d3",
         "path": "/maps/MapHenesys/GreenSlime02",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
         "jsonString": {
@@ -7606,7 +7618,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 13,
+          "displayOrder": 12,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "greenslime",
@@ -7748,13 +7760,13 @@
             "type": "Model",
             "entry_id": "greenslime",
             "sub_entity_id": null,
-            "root_entity_id": "3e8be773-ea98-4eb6-af30-f013fe5c552d",
+            "root_entity_id": "2ac5f406-e280-48a3-a8f7-f58021e065d3",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "44bd7c2e-3303-4875-86c0-21a931c295f8",
+        "id": "1c5abbaf-62bd-4404-9751-4cbd72f541d6",
         "path": "/maps/MapHenesys/OrangeMushroom03",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -7764,7 +7776,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 14,
+          "displayOrder": 13,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "orangemushroom",
@@ -7902,13 +7914,13 @@
             "type": "Model",
             "entry_id": "orangemushroom",
             "sub_entity_id": null,
-            "root_entity_id": "44bd7c2e-3303-4875-86c0-21a931c295f8",
+            "root_entity_id": "1c5abbaf-62bd-4404-9751-4cbd72f541d6",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "db857709-40ea-4011-b2a7-d216ebd5a473",
+        "id": "e7d4d970-aa91-467f-bb9e-b27cbbbcd133",
         "path": "/maps/MapHenesys/GreenSlime03",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
         "jsonString": {
@@ -7918,7 +7930,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 15,
+          "displayOrder": 14,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "greenslime",
@@ -8060,13 +8072,13 @@
             "type": "Model",
             "entry_id": "greenslime",
             "sub_entity_id": null,
-            "root_entity_id": "db857709-40ea-4011-b2a7-d216ebd5a473",
+            "root_entity_id": "e7d4d970-aa91-467f-bb9e-b27cbbbcd133",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "f07afff5-1294-47a8-9898-857449d0408d",
+        "id": "f5b58323-102b-40cd-be03-0c5f6ce1445b",
         "path": "/maps/MapHenesys/OrangeMushroom04",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack",
         "jsonString": {
@@ -8076,7 +8088,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 16,
+          "displayOrder": 15,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "orangemushroom",
@@ -8214,13 +8226,13 @@
             "type": "Model",
             "entry_id": "orangemushroom",
             "sub_entity_id": null,
-            "root_entity_id": "f07afff5-1294-47a8-9898-857449d0408d",
+            "root_entity_id": "f5b58323-102b-40cd-be03-0c5f6ce1445b",
             "replaced_model_id": null
           }
         }
       },
       {
-        "id": "541ceda8-d10a-40a3-92f6-fef496fb24c1",
+        "id": "2b834fa8-afc1-432e-957e-3e55508ea2af",
         "path": "/maps/MapHenesys/GreenSlime04",
         "componentNames": "MOD.Core.TransformComponent,MOD.Core.StateAnimationComponent,MOD.Core.SpriteRendererComponent,MOD.Core.RigidbodyComponent,MOD.Core.MovementComponent,MOD.Core.StateComponent,MOD.Core.AIWanderComponent,MOD.Core.HitComponent,MOD.Core.DamageSkinSpawnerComponent,MOD.Core.DamageSkinSettingComponent,script.Monster,script.FieldMonsterAttack,script.FieldMonsterHop",
         "jsonString": {
@@ -8230,7 +8242,7 @@
           "enable": true,
           "visible": true,
           "localize": false,
-          "displayOrder": 17,
+          "displayOrder": 16,
           "pathConstraints": "///",
           "revision": 1,
           "modelId": "greenslime",
@@ -8372,7 +8384,7 @@
             "type": "Model",
             "entry_id": "greenslime",
             "sub_entity_id": null,
-            "root_entity_id": "541ceda8-d10a-40a3-92f6-fef496fb24c1",
+            "root_entity_id": "2b834fa8-afc1-432e-957e-3e55508ea2af",
             "replaced_model_id": null
           }
         }
